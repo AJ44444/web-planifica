@@ -132,7 +132,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPDFModal }) => {
         }
 
         .brand-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 1.35rem;
           font-weight: 700;
           color: #1d4ed8;

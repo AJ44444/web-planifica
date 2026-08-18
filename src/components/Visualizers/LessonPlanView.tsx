@@ -76,7 +76,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
           }
 
           .empty-visualizer-title {
-            font-family: 'Outfit', sans-serif;
+            font-family: var(--font-heading);
             font-size: 1.25rem;
             font-weight: 700;
             color: #0f172a;
@@ -305,7 +305,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
         }
 
         .fila-title-banner .banner-text {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-weight: 700;
           font-size: 1.05rem;
           color: #1d4ed8;
@@ -337,7 +337,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
         }
 
         .visualizer-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 1.25rem;
           font-weight: 700;
           color: #0f172a;
@@ -657,7 +657,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
           background: #eff6ff;
           color: #1d4ed8;
           border-bottom: 1px solid #bfdbfe;
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.03em;

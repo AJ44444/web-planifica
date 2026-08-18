@@ -58,13 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const loginWithToken = (idToken: string, userPayload?: Partial<User>) => {
-    // Strict Cookie Storage per specification
-    Cookies.set(TOKEN_COOKIE_NAME, idToken, { 
+    // 1-day cookie expiration persistence
+    const cookieOptions = {
       expires: 1, // 1 day
-      sameSite: 'strict',
+      sameSite: 'strict' as const,
       secure: window.location.protocol === 'https:'
-    });
+    };
 
+    Cookies.set(TOKEN_COOKIE_NAME, idToken, cookieOptions);
     setToken(idToken);
 
     const decoded = parseJwt(idToken);
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setUser(userInfo);
-    Cookies.set('user_profile_cache', JSON.stringify(userInfo), { expires: 1, sameSite: 'strict' });
+    Cookies.set('user_profile_cache', JSON.stringify(userInfo), cookieOptions);
   };
 
   const logout = () => {

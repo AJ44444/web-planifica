@@ -187,7 +187,7 @@ export const LoginModal: React.FC = () => {
           padding: 2rem;
           overflow-y: auto;
           box-sizing: border-box;
-          font-family: 'Inter', sans-serif;
+          font-family: var(--font-body);
         }
 
         .bg-glow {
@@ -254,7 +254,7 @@ export const LoginModal: React.FC = () => {
         }
 
         .brand-name {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 1.65rem;
           font-weight: 800;
           color: #0f172a;
@@ -282,7 +282,7 @@ export const LoginModal: React.FC = () => {
         }
 
         .hero-headline {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 2.5rem;
           font-weight: 800;
           line-height: 1.15;
@@ -464,7 +464,7 @@ export const LoginModal: React.FC = () => {
         }
 
         .auth-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 1.75rem;
           font-weight: 700;
           color: #0f172a;

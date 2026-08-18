@@ -151,7 +151,7 @@ export const ThreadHistoryView: React.FC = () => {
         }
 
         .visualizer-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 1.25rem;
           font-weight: 700;
           color: #0f172a;
@@ -297,7 +297,7 @@ export const ThreadHistoryView: React.FC = () => {
         }
 
         .thread-card-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 0.95rem;
           font-weight: 700;
           color: #0f172a;

@@ -321,7 +321,7 @@ const MainWorkspaceContent: React.FC = () => {
         }
 
         .hero-title {
-          font-family: 'Outfit', sans-serif;
+          font-family: var(--font-heading);
           font-size: 2.25rem;
           font-weight: 800;
           color: #0f172a;
