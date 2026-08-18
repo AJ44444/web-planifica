@@ -1,6 +1,6 @@
-# 🎓 Planifica - Plataforma Educativa Inteligente Multiagente
+# 🎓 Planifica - Plataforma Educativa Inteligente
 
-**Planifica** es una plataforma web moderna para docentes diseñada para automatizar la generación de secuencias didácticas, instrumentos de evaluación (rúbricas y listas de cotejo) y la integración de recursos multimodales alineados a la malla curricular del **Currículum Nacional Base (CNB) de Guatemala**, utilizando una arquitectura basada en **Grafos Multiagente (LangGraph)** y **Google Gemini**.
+**Planifica** es una plataforma web moderna para docentes diseñada para automatizar la generación de secuencias didácticas, instrumentos de evaluación (rúbricas y listas de cotejo) y la integración de recursos multimodales alineados a la malla curricular del **Currículum Nacional Base (CNB) de Guatemala**.
 
 ---
 
@@ -83,6 +83,5 @@ npm run build
 
 - **Autenticación Segura**: Integración con Google OAuth 2.0 y persistencia estricta en cookies HTTP.
 - **Grafo Multiagente Transmisión SSE**: Conexión directa en tiempo real con el Grafo Supervisor de LangGraph.
-- **Indexación del CNB**: Subida y lectura estructurada de documentos PDF curriculares.
 - **Visualización Limpia**: Sincronización automática de visualizadores de planes, rúbricas y recursos.
 - **Diseño Adaptable (Responsive)**: Interfaz fluida optimizada para computadoras, tabletas y teléfonos móviles.
