@@ -385,6 +385,26 @@ export const ThreadHistoryView: React.FC = () => {
           border-color: #fda4af;
           color: #be123c;
         }
+
+        /* Mobile Responsive Rules */
+        @media (max-width: 900px) {
+          .visualizer-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.85rem;
+          }
+
+          .btn-new-thread-action {
+            width: 100%;
+            justify-content: center;
+          }
+
+          .history-stats-bar {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+          }
+        }
       `}</style>
     </div>
   );
