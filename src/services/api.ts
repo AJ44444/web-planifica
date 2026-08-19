@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import type { SubAgentType, ChatMessage, Thread } from '../types';
+import type { ChatMessage, Thread } from '../types';
 import { parseAgentResponse } from '../utils/parser';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL || 'http://localhost:8000';
@@ -103,8 +103,6 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
               role,
               content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
               timestamp: msg.timestamp || new Date().toISOString(),
-              agentType: msg.agent_type || 'class_planner',
-              agentName: msg.agent_name || 'Planifica',
             });
           }
         }
@@ -119,7 +117,6 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
 
 export interface StreamCallbacks {
   onToken: (token: string) => void;
-  onAgentChange?: (agentType: SubAgentType, agentName: string) => void;
   onComplete: (fullMessage: ChatMessage) => void;
   onError: (error: Error) => void;
 }
@@ -129,6 +126,8 @@ export async function streamLangGraphRun(
   userMessageText: string,
   callbacks: StreamCallbacks
 ): Promise<void> {
+  let fullContent = '';
+
   try {
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
       method: 'POST',
@@ -147,9 +146,6 @@ export async function streamLangGraphRun(
 
     const reader = response.body.getReader();
     const decoder = new TextDecoder('utf-8');
-    let fullContent = '';
-    let currentAgent: SubAgentType = 'class_planner';
-    let currentAgentName = 'Planificador de Clases';
     let buffer = '';
 
     while (true) {
@@ -170,28 +166,6 @@ export async function streamLangGraphRun(
 
           try {
             const parsed = JSON.parse(dataStr);
-
-            // Detect active subagent from event payload
-            if (parsed.node || parsed.event) {
-              const nodeName = String(parsed.node || parsed.event).toLowerCase();
-              if (nodeName.includes('pdf') || nodeName.includes('cnb')) {
-                currentAgent = 'pdf_processor';
-                currentAgentName = 'Procesador de PDF CNB';
-              } else if (nodeName.includes('plan') || nodeName.includes('clase')) {
-                currentAgent = 'class_planner';
-                currentAgentName = 'Planificador de Clases';
-              } else if (nodeName.includes('eval') || nodeName.includes('rubric')) {
-                currentAgent = 'evaluator';
-                currentAgentName = 'Instrumentos de Evaluación';
-              } else if (nodeName.includes('multi') || nodeName.includes('media')) {
-                currentAgent = 'multimodal';
-                currentAgentName = 'Recursos Multimodales';
-              } else if (nodeName.includes('query') || nodeName.includes('consulta')) {
-                currentAgent = 'specialized';
-                currentAgentName = 'Consultas Especializadas';
-              }
-              callbacks.onAgentChange?.(currentAgent, currentAgentName);
-            }
 
             // Extract text chunk strictly from assistant / AI messages
             let textChunk = '';
@@ -226,12 +200,23 @@ export async function streamLangGraphRun(
       role: 'assistant',
       content: fullContent,
       timestamp: new Date().toISOString(),
-      agentType: currentAgent,
-      agentName: currentAgentName,
       structuredData,
     });
   } catch (err: any) {
     console.error('SSE stream error:', err);
-    callbacks.onError(err instanceof Error ? err : new Error(String(err)));
+    if (fullContent && fullContent.trim().length > 0) {
+      // Content was received from agent before connection closed; preserve and complete
+      const structuredData = parseAgentResponse(fullContent);
+      callbacks.onComplete({
+        id: `msg_${Date.now()}`,
+        role: 'assistant',
+        content: fullContent,
+        timestamp: new Date().toISOString(),
+        structuredData,
+      });
+    } else {
+      // Real API failure with 0 content delivered
+      callbacks.onError(err instanceof Error ? err : new Error(String(err)));
+    }
   }
 }

@@ -189,13 +189,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           )
         );
       },
-      onAgentChange: (agentType, agentName) => {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === streamMsgId ? { ...msg, agentType, agentName } : msg
-          )
-        );
-      },
       onComplete: (finalMessage) => {
         const isFullPlan = isFullPlanResponse(finalMessage.content);
 
@@ -221,14 +214,26 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       },
       onError: () => {
         setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === streamMsgId
-              ? {
-                  ...msg,
-                  content: '⚠️ No fue posible procesar tu consulta con el servidor de la plataforma. Por favor intenta de nuevo en unos momentos.',
+          prev.map((msg) => {
+            if (msg.id === streamMsgId) {
+              // If content was already received from the server, keep it and do not overwrite with error
+              if (msg.content && msg.content.trim().length > 0) {
+                const isFull = isFullPlanResponse(msg.content);
+                if (isFull) {
+                  const parsedData = parseAgentResponse(msg.content);
+                  setCurrentPlanData(parsedData.plan || null);
+                  setCurrentRubricData(parsedData.rubric || null);
+                  setCurrentMultimodalData(parsedData.multimodal || null);
                 }
-              : msg
-          )
+                return { ...msg, isFullPlanResponse: isFull };
+              }
+              return {
+                ...msg,
+                content: '⚠️ No fue posible procesar tu consulta con el servidor de la plataforma. Por favor intenta de nuevo en unos momentos.',
+              };
+            }
+            return msg;
+          })
         );
         setIsStreaming(false);
       },
