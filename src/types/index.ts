@@ -24,7 +24,7 @@ export interface EncabezadoPlan {
   curso?: string;
   grado: string;
   seccion: string;
-  duracion: number | string;
+  duracion: string;
 }
 
 export interface IndicadorPlanItem {

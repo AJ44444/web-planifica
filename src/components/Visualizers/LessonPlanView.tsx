@@ -160,11 +160,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
         </div>
         <div className="meta-card">
           <span className="meta-label"><Clock size={12} /> Duración</span>
-          <span className="meta-value">
-            {typeof encabezado?.duracion === 'number' 
-              ? `${encabezado.duracion} Período(s)` 
-              : (encabezado?.duracion || '45 min')}
-          </span>
+          <span className="meta-value">{encabezado?.duracion || '45 min'}</span>
         </div>
       </div>
 
