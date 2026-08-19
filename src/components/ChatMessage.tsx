@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ChatMessage as ChatMessageType } from '../types';
 import { Bot, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 import { isFullPlanResponse } from '../utils/parser';
 
@@ -20,7 +21,11 @@ Sus elementos ya se encuentran disponibles para su consulta en los visualizadore
 - 🎬 **Recursos Multimodales**: Galería interactiva con videos, imágenes, audios y documentos sugeridos.`;
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
+  const { user } = useAuth();
+  const [imgError, setImgError] = useState(false);
+
   const isUser = message.role === 'user';
+  const userPhoto = user?.picture;
   const showFullPlanMessage = !isUser && (message.isFullPlanResponse || isFullPlanResponse(message.content));
   const displayContent = showFullPlanMessage ? PREDETERMINED_PLAN_NOTIFICATION : message.content;
 
@@ -38,7 +43,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
       <div className="avatar-cell">
         {isUser ? (
           <div className="user-chat-avatar">
-            <User size={18} color="#ffffff" />
+            {userPhoto && !imgError ? (
+              <img
+                src={userPhoto}
+                alt={user?.name || "Usuario"}
+                className="user-avatar-img"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <User size={18} color="#ffffff" />
+            )}
           </div>
         ) : (
           <div className="assistant-chat-avatar">
@@ -111,6 +125,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
           align-items: center;
           justify-content: center;
           box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2);
+          overflow: hidden;
+        }
+
+        .user-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 50%;
         }
 
         .assistant-chat-avatar {

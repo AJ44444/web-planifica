@@ -179,13 +179,15 @@ export const LoginModal: React.FC = () => {
         .login-backdrop {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
+          width: 100vw;
+          height: 100vh;
           background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 1000;
-          padding: 2rem;
-          overflow-y: auto;
+          padding: 1.5rem;
+          overflow: hidden;
           box-sizing: border-box;
           font-family: var(--font-body);
         }
@@ -528,18 +530,15 @@ export const LoginModal: React.FC = () => {
 
         /* Responsive Breakpoints */
         @media (max-width: 960px) {
+          .login-hero-col {
+            display: none;
+          }
+
           .login-container {
             grid-template-columns: 1fr;
-            gap: 2.5rem;
-            max-width: 480px;
-          }
-
-          .hero-headline {
-            font-size: 1.95rem;
-          }
-
-          .agent-graph-graphic {
-            display: none;
+            max-width: 440px;
+            min-height: auto;
+            justify-content: center;
           }
         }
       `}</style>
