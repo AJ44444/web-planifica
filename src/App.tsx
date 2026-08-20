@@ -191,7 +191,13 @@ const MainWorkspaceContent: React.FC = () => {
               </div>
             )}
 
-            {activeViewTab === 'plan' && <LessonPlanView data={currentPlanData} />}
+            {activeViewTab === 'plan' && (
+              <LessonPlanView
+                data={currentPlanData}
+                rubricData={currentRubricData}
+                multimodalData={currentMultimodalData}
+              />
+            )}
             {activeViewTab === 'rubric' && <RubricView data={currentRubricData} />}
             {activeViewTab === 'multimodal' && <MultimodalView data={currentMultimodalData} />}
             {activeViewTab === 'history' && <ThreadHistoryView />}

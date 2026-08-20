@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
+    "docx": "^9.7.1",
     "js-cookie": "^3.0.8",
     "lucide-react": "^1.30.0",
     "react": "^19.2.8",

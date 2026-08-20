@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import type { PlanificacionClase } from '../../types';
+import type { PlanificacionClase, InstrumentoEvaluacion, RecursoMultimodal } from '../../types';
+import { exportToWord } from '../../utils/wordExporter';
 import { 
   BookOpen, 
   Target, 
@@ -10,16 +11,21 @@ import {
   Clock, 
   GraduationCap, 
   Award, 
-  Users
+  Users,
+  FileDown
 } from 'lucide-react';
 
 interface LessonPlanViewProps {
   data?: PlanificacionClase | null;
+  rubricData?: InstrumentoEvaluacion | null;
+  multimodalData?: RecursoMultimodal[] | null;
 }
 
-
-
-export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
+export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ 
+  data,
+  rubricData,
+  multimodalData
+}) => {
   // Selected tree node path state for interactive branch highlight
   const [selectedNode, setSelectedNode] = useState<{
     filaId: number;
@@ -123,6 +129,14 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
             </p>
           </div>
         </div>
+
+        <button
+          className="btn-export-word"
+          onClick={() => exportToWord(data, rubricData, multimodalData)}
+          title="Exportar planificación a Microsoft Word (.docx)"
+        >
+          <FileDown size={16} /> Exportar
+        </button>
       </div>
 
       {/* Administrative Header (8 Cards arranged 4 and 4) */}
@@ -344,6 +358,28 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ data }) => {
           font-size: 0.8rem;
           color: #64748b;
           margin: 0;
+        }
+
+        .btn-export-word {
+          background: #1d4ed8;
+          color: #ffffff;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2);
+        }
+
+        .btn-export-word:hover {
+          background: #1e40af;
+          box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+          transform: translateY(-1px);
         }
 
         .plan-metadata-grid {
