@@ -2,7 +2,7 @@ import Cookies from 'js-cookie';
 import type { ChatMessage, Thread } from '../types';
 import { parseAgentResponse } from '../utils/parser';
 
-const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
 function getAuthHeaders(): HeadersInit {
   const token = Cookies.get('google_id_token') || '';

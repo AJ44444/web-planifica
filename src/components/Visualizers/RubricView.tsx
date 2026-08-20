@@ -6,8 +6,6 @@ interface RubricViewProps {
   data?: InstrumentoEvaluacion | null;
 }
 
-
-
 // Helper function to strip score points from scale labels e.g. "Excelente (4 pts)" -> "Excelente"
 const cleanScaleLabel = (label: string): string => {
   return label.replace(/\s*\(\d+\s*(?:pts|puntos)?\)/gi, '').trim();
@@ -17,9 +15,9 @@ export const RubricView: React.FC<RubricViewProps> = ({ data }) => {
   const tools = data?.herramientas && data.herramientas.length > 0 
     ? data.herramientas 
     : (data?.instrumento_generado?.criterios ? [{
-        tipo: data.tipo || 'rubrica',
-        titulo: data.titulo || 'Herramientas de Evaluación',
-        escala: data.instrumento_generado.escala || ['Excelente', 'Satisfactorio', 'En proceso', 'Necesita apoyo'],
+        tipo: data.tipo,
+        titulo: data.titulo,
+        escala: data.instrumento_generado.escala,
         criterios: data.instrumento_generado.criterios
       }] : []);
 
@@ -131,13 +129,8 @@ export const RubricView: React.FC<RubricViewProps> = ({ data }) => {
                 </thead>
                 <tbody>
                   {(tool.criterios || []).map((crit: any, cIdx: number) => {
-                    const critName = crit.nombre || crit.aspecto_o_criterio || `Criterio #${cIdx + 1}`;
-                    const defs = crit.definiciones || [
-                      crit.excelente || 'Ejecuta el aspecto con excelencia.',
-                      crit.satisfactorio || 'Ejecuta el aspecto de forma satisfactoria.',
-                      crit.en_proceso || 'Ejecuta el aspecto en proceso de mejora.',
-                      crit.necesita_apoyo || 'Requiere apoyo y nivelación.'
-                    ];
+                    const critName = crit.nombre;
+                    const defs = crit.definiciones;
 
                     return (
                       <tr key={cIdx}>

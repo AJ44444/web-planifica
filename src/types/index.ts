@@ -1,10 +1,3 @@
-export type SubAgentType = 
-  | 'pdf_processor' 
-  | 'class_planner' 
-  | 'evaluator' 
-  | 'multimodal' 
-  | 'specialized';
-
 export interface User {
   google_id: string;
   name: string;
@@ -104,7 +97,6 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
-  agentType?: SubAgentType;
   agentName?: string;
   isFullPlanResponse?: boolean;
   structuredData?: {

@@ -44,7 +44,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
             No has solicitado ver una planificación completa en el chat
           </h2>
           <p className="empty-visualizer-subtitle">
-            Solicítala en el chat para ver el detalle estructurado de la secuencia didáctica, rúbricas e instrumentos de evaluación, y recursos multimodales sugeridos.
+            Solicítala en el chat para ver el detalle estructurado de la secuencia didáctica.
           </p>
         </div>
 
@@ -144,37 +144,37 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
         {/* Row 1: 4 Cards */}
         <div className="meta-card">
           <span className="meta-label"><Building2 size={12} /> Centro Educativo</span>
-          <span className="meta-value">{encabezado?.centro_educativo || 'Centro Educativo'}</span>
+          <span className="meta-value">{encabezado?.centro_educativo}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><MapPin size={12} /> Ubicación</span>
-          <span className="meta-value">{encabezado?.lugar || 'Ubicación'}</span>
+          <span className="meta-value">{encabezado?.lugar}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><UserCheck size={12} /> Docente</span>
-          <span className="meta-value">{encabezado?.nombre_docente || (encabezado as any)?.docente || 'Docente'}</span>
+          <span className="meta-value">{encabezado?.nombre_docente || (encabezado as any)?.docente}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><GraduationCap size={12} /> Carrera</span>
-          <span className="meta-value">{encabezado?.carrera || 'Ciclo de Educación Básica'}</span>
+          <span className="meta-value">{encabezado?.carrera}</span>
         </div>
 
         {/* Row 2: 4 Cards */}
         <div className="meta-card">
-          <span className="meta-label"><BookOpen size={12} /> Curso / Área</span>
-          <span className="meta-value">{encabezado?.curso || (encabezado as any)?.subarea || 'Educación Física'}</span>
+          <span className="meta-label"><BookOpen size={12} /> Curso</span>
+          <span className="meta-value">{encabezado?.curso || (encabezado as any)?.subarea}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><Award size={12} /> Grado</span>
-          <span className="meta-value">{encabezado?.grado || 'Grado'}</span>
+          <span className="meta-value">{encabezado?.grado}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><Users size={12} /> Sección</span>
-          <span className="meta-value">{encabezado?.seccion ? (encabezado.seccion.startsWith('Sección') ? encabezado.seccion : `Sección ${encabezado.seccion}`) : 'Sección A'}</span>
+          <span className="meta-value">{encabezado?.seccion}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><Clock size={12} /> Duración</span>
-          <span className="meta-value">{encabezado?.duracion || '45 min'}</span>
+          <span className="meta-value">{encabezado?.duracion}</span>
         </div>
       </div>
 
