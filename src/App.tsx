@@ -222,7 +222,7 @@ const MainWorkspaceContent: React.FC = () => {
                     <textarea
                       ref={textareaRef}
                       className="chat-textarea-input"
-                      placeholder="Escribe tu consulta pedagógica o adjunta un PDF del CNB..."
+                      placeholder="Escribe tu pregunta o adjunta un PDF del CNB..."
                       value={inputPrompt}
                       onChange={(e) => {
                         setInputPrompt(e.target.value);
