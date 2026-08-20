@@ -47,16 +47,16 @@ export function parseAgentResponse(rawText: string): ExtractedStructuredData {
       const firstTool = instList[0];
       result.rubric = {
         tipo: firstTool.tipo || 'rubrica',
-        titulo: firstTool.titulo || 'Herramientas de Evaluación',
+        titulo: firstTool.titulo || '',
         instrumento_generado: firstTool.instrumento_generado || {
-          escala: ['Excelente', 'Satisfactorio', 'En proceso', 'Necesita apoyo'],
-          criterios: []
+          escala: firstTool.escala || [],
+          criterios: firstTool.criterios || []
         },
         herramientas: instList.map((tool: any) => ({
           tipo: tool.tipo || 'rubrica',
-          titulo: tool.titulo || 'Instrumento de Evaluación',
-          escala: tool.instrumento_generado?.escala || ['Excelente', 'Satisfactorio', 'En proceso', 'Necesita apoyo'],
-          criterios: tool.instrumento_generado?.criterios || []
+          titulo: tool.titulo || '',
+          escala: tool.escala || tool.instrumento_generado?.escala || [],
+          criterios: tool.criterios || tool.instrumento_generado?.criterios || []
         }))
       };
     } else if (parsedObj.instrumento_generado || (parsedObj.tipo && parsedObj.criterios)) {
