@@ -14,7 +14,7 @@ import { LoginModal } from './components/LoginModal';
 
 import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History, Paperclip, FileText, X } from 'lucide-react';
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '109482736481-demo.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const MainWorkspaceContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -93,10 +93,11 @@ const MainWorkspaceContent: React.FC = () => {
     if (e) e.preventDefault();
     if ((!inputPrompt.trim() && !attachedFile) || isStreaming) return;
     
+    const fileToUpload = attachedFile;
     let textToSend = inputPrompt.trim();
-    if (attachedFile) {
-      const fileNote = `[Archivo CNB Adjunto: ${attachedFile.name}]`;
-      textToSend = textToSend ? `${textToSend}\n\n${fileNote}` : `Consultando con documento CNB adjunto: ${attachedFile.name}`;
+    if (fileToUpload) {
+      const fileNote = `[Archivo CNB Adjunto: ${fileToUpload.name}]`;
+      textToSend = textToSend ? `${textToSend}\n\n${fileNote}` : `Consultando con documento CNB adjunto: ${fileToUpload.name}`;
     }
 
     setInputPrompt('');
@@ -104,7 +105,7 @@ const MainWorkspaceContent: React.FC = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-    await sendMessage(textToSend);
+    await sendMessage(textToSend, fileToUpload);
   };
 
   return (

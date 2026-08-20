@@ -124,20 +124,40 @@ export interface StreamCallbacks {
 export async function streamLangGraphRun(
   threadId: string,
   userMessageText: string,
-  callbacks: StreamCallbacks
+  callbacks: StreamCallbacks,
+  attachedFile?: File | null
 ): Promise<void> {
   let fullContent = '';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({
+    const token = Cookies.get('google_id_token') || '';
+    const headers: Record<string, string> = {
+      'Authorization': token ? `Bearer ${token}` : '',
+    };
+
+    let body: BodyInit;
+
+    if (attachedFile) {
+      // Option B: Stream of binary bytes in memory (UploadFile / HTTP Multipart)
+      const formData = new FormData();
+      formData.append('file', attachedFile, attachedFile.name);
+      formData.append('assistant_id', 'supervisor');
+      formData.append('message', userMessageText || `Por favor procesa el documento PDF del CNB: ${attachedFile.name}`);
+      body = formData;
+    } else {
+      headers['Content-Type'] = 'application/json';
+      body = JSON.stringify({
         assistant_id: 'supervisor',
         input: {
           messages: [{ role: 'user', content: userMessageText }],
         },
-      }),
+      });
+    }
+
+    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
+      method: 'POST',
+      headers,
+      body,
     });
 
     if (!response.ok || !response.body) {

@@ -21,7 +21,7 @@ interface LangGraphContextType {
   currentRubricData: InstrumentoEvaluacion | null;
   currentMultimodalData: RecursoMultimodal[] | null;
   setActiveViewTab: (tab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history') => void;
-  sendMessage: (text: string) => Promise<void>;
+  sendMessage: (text: string, attachedFile?: File | null) => Promise<void>;
   createNewThread: () => Promise<string>;
   selectThread: (threadId: string) => void;
   deleteThreadById: (threadId: string) => Promise<void>;
@@ -144,8 +144,8 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setActiveViewTab('chat');
   };
 
-  const sendMessage = async (text: string) => {
-    if (!text.trim() || isStreaming) return;
+  const sendMessage = async (text: string, attachedFile?: File | null) => {
+    if ((!text.trim() && !attachedFile) || isStreaming) return;
 
     // Ensure mandatory thread_id exists before starting graph execution
     let activeThreadId = currentThreadId;
@@ -173,63 +173,68 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     setMessages((prev) => [...prev, initialStreamMsg]);
 
-    await streamLangGraphRun(activeThreadId, text, {
-      onToken: (chunk) => {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === streamMsgId ? { ...msg, content: msg.content + chunk } : msg
-          )
-        );
-      },
-      onComplete: (finalMessage) => {
-        const isFullPlan = isFullPlanResponse(finalMessage.content);
+    await streamLangGraphRun(
+      activeThreadId,
+      text,
+      {
+        onToken: (chunk) => {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === streamMsgId ? { ...msg, content: msg.content + chunk } : msg
+            )
+          );
+        },
+        onComplete: (finalMessage) => {
+          const isFullPlan = isFullPlanResponse(finalMessage.content);
 
-        if (isFullPlan) {
-          const parsedData = parseAgentResponse(finalMessage.content);
-          setCurrentPlanData(parsedData.plan || null);
-          setCurrentRubricData(parsedData.rubric || null);
-          setCurrentMultimodalData(parsedData.multimodal || null);
-        } else if (finalMessage.structuredData) {
-          setCurrentPlanData(finalMessage.structuredData.plan || null);
-          setCurrentRubricData(finalMessage.structuredData.rubric || null);
-          setCurrentMultimodalData(finalMessage.structuredData.multimodal || null);
-        }
+          if (isFullPlan) {
+            const parsedData = parseAgentResponse(finalMessage.content);
+            setCurrentPlanData(parsedData.plan || null);
+            setCurrentRubricData(parsedData.rubric || null);
+            setCurrentMultimodalData(parsedData.multimodal || null);
+          } else if (finalMessage.structuredData) {
+            setCurrentPlanData(finalMessage.structuredData.plan || null);
+            setCurrentRubricData(finalMessage.structuredData.rubric || null);
+            setCurrentMultimodalData(finalMessage.structuredData.multimodal || null);
+          }
 
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === streamMsgId
-              ? { ...finalMessage, id: streamMsgId, isFullPlanResponse: isFullPlan }
-              : msg
-          )
-        );
-        setIsStreaming(false);
-      },
-      onError: () => {
-        setMessages((prev) =>
-          prev.map((msg) => {
-            if (msg.id === streamMsgId) {
-              // If content was already received from the server, keep it and do not overwrite with error
-              if (msg.content && msg.content.trim().length > 0) {
-                const isFull = isFullPlanResponse(msg.content);
-                if (isFull) {
-                  const parsedData = parseAgentResponse(msg.content);
-                  setCurrentPlanData(parsedData.plan || null);
-                  setCurrentRubricData(parsedData.rubric || null);
-                  setCurrentMultimodalData(parsedData.multimodal || null);
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === streamMsgId
+                ? { ...finalMessage, id: streamMsgId, isFullPlanResponse: isFullPlan }
+                : msg
+            )
+          );
+          setIsStreaming(false);
+        },
+        onError: () => {
+          setMessages((prev) =>
+            prev.map((msg) => {
+              if (msg.id === streamMsgId) {
+                // If content was already received from the server, keep it and do not overwrite with error
+                if (msg.content && msg.content.trim().length > 0) {
+                  const isFull = isFullPlanResponse(msg.content);
+                  if (isFull) {
+                    const parsedData = parseAgentResponse(msg.content);
+                    setCurrentPlanData(parsedData.plan || null);
+                    setCurrentRubricData(parsedData.rubric || null);
+                    setCurrentMultimodalData(parsedData.multimodal || null);
+                  }
+                  return { ...msg, isFullPlanResponse: isFull };
                 }
-                return { ...msg, isFullPlanResponse: isFull };
+                return {
+                  ...msg,
+                  content: '⚠️ No fue posible procesar tu consulta con el servidor de la plataforma. Por favor intenta de nuevo en unos momentos.',
+                };
               }
-              return {
-                ...msg,
-                content: '⚠️ No fue posible procesar tu consulta con el servidor de la plataforma. Por favor intenta de nuevo en unos momentos.',
-              };
-            }
-            return msg;
-          })
-        );
-        setIsStreaming(false);
+              return msg;
+            })
+          );
+          setIsStreaming(false);
+        },
       },
-    });
+      attachedFile
+    );
   };
 
   return (
