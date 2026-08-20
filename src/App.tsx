@@ -10,10 +10,9 @@ import { LessonPlanView } from './components/Visualizers/LessonPlanView';
 import { RubricView } from './components/Visualizers/RubricView';
 import { MultimodalView } from './components/Visualizers/MultimodalView';
 import { ThreadHistoryView } from './components/Visualizers/ThreadHistoryView';
-import { PDFParserModal } from './components/PDFParserModal';
 import { LoginModal } from './components/LoginModal';
 
-import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History } from 'lucide-react';
+import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History, Paperclip, FileText, X } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '109482736481-demo.apps.googleusercontent.com';
 
@@ -33,9 +32,10 @@ const MainWorkspaceContent: React.FC = () => {
   } = useLangGraph();
 
   const [inputPrompt, setInputPrompt] = useState('');
-  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -66,20 +66,50 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+
+      if (!isPdf) {
+        alert('Solo se admiten archivos en formato PDF.');
+        e.target.value = '';
+        return;
+      }
+
+      if (file.size > MAX_SIZE_BYTES) {
+        alert('El archivo supera el tamaño máximo permitido de 10 MB.');
+        e.target.value = '';
+        return;
+      }
+
+      setAttachedFile(file);
+      e.target.value = '';
+    }
+  };
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputPrompt.trim() || isStreaming) return;
-    const text = inputPrompt;
+    if ((!inputPrompt.trim() && !attachedFile) || isStreaming) return;
+    
+    let textToSend = inputPrompt.trim();
+    if (attachedFile) {
+      const fileNote = `[Archivo CNB Adjunto: ${attachedFile.name}]`;
+      textToSend = textToSend ? `${textToSend}\n\n${fileNote}` : `Consultando con documento CNB adjunto: ${attachedFile.name}`;
+    }
+
     setInputPrompt('');
+    setAttachedFile(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-    await sendMessage(text);
+    await sendMessage(textToSend);
   };
 
   return (
     <div className="app-shell">
-      <Navbar onOpenPDFModal={() => setIsPDFModalOpen(true)} />
+      <Navbar />
 
       <div className="app-main-layout">
         {/* Sidebar with Navigation */}
@@ -108,7 +138,7 @@ const MainWorkspaceContent: React.FC = () => {
               className={`workspace-tab ${activeViewTab === 'rubric' ? 'active' : ''}`}
               onClick={() => handleTabSelect('rubric')}
             >
-              <ClipboardCheck size={16} /> Rúbricas & Cotejo
+              <ClipboardCheck size={16} /> Herramientas de Evaluación
             </button>
             <button
               className={`workspace-tab ${activeViewTab === 'multimodal' ? 'active' : ''}`}
@@ -153,40 +183,76 @@ const MainWorkspaceContent: React.FC = () => {
 
                 {/* Multiline auto-expanding textarea input form */}
                 <form className="chat-input-form" onSubmit={handleSend}>
-                  <textarea
-                    ref={textareaRef}
-                    className="chat-textarea-input"
-                    placeholder="Escribe tu consulta pedagógica o solicita una planificación..."
-                    value={inputPrompt}
-                    onChange={(e) => {
-                      setInputPrompt(e.target.value);
-                      e.target.style.height = 'auto';
-                      const newHeight = Math.min(e.target.scrollHeight, 140);
-                      e.target.style.height = `${newHeight}px`;
-                      e.target.scrollTop = e.target.scrollHeight;
-                      scrollToBottom();
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (!e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        } else {
-                          setTimeout(scrollToBottom, 20);
+                  {/* File Attachment Chip */}
+                  {attachedFile && (
+                    <div className="chat-attachment-chip">
+                      <FileText size={16} className="chip-icon" />
+                      <span className="chip-name">{attachedFile.name}</span>
+                      <span className="chip-size">({(attachedFile.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                      <button
+                        type="button"
+                        className="chip-remove-btn"
+                        onClick={() => setAttachedFile(null)}
+                        title="Quitar archivo adjunto"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="chat-input-row">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept=".pdf"
+                      onChange={handleFileSelect}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-attach-file"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Adjuntar PDF del CNB"
+                      disabled={isStreaming}
+                    >
+                      <Paperclip size={18} />
+                    </button>
+
+                    <textarea
+                      ref={textareaRef}
+                      className="chat-textarea-input"
+                      placeholder="Escribe tu consulta pedagógica o adjunta un PDF del CNB..."
+                      value={inputPrompt}
+                      onChange={(e) => {
+                        setInputPrompt(e.target.value);
+                        e.target.style.height = 'auto';
+                        const newHeight = Math.min(e.target.scrollHeight, 140);
+                        e.target.style.height = `${newHeight}px`;
+                        e.target.scrollTop = e.target.scrollHeight;
+                        scrollToBottom();
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          if (!e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          } else {
+                            setTimeout(scrollToBottom, 20);
+                          }
                         }
-                      }
-                    }}
-                    rows={1}
-                    disabled={isStreaming}
-                  />
-                  <button
-                    type="submit"
-                    className="btn btn-primary send-btn"
-                    disabled={!inputPrompt.trim() || isStreaming}
-                  >
-                    <Send size={18} />
-                    <span>Enviar</span>
-                  </button>
+                      }}
+                      rows={1}
+                      disabled={isStreaming}
+                    />
+                    <button
+                      type="submit"
+                      className="btn btn-primary send-btn"
+                      disabled={(!inputPrompt.trim() && !attachedFile) || isStreaming}
+                    >
+                      <Send size={18} />
+                      <span>Enviar</span>
+                    </button>
+                  </div>
                 </form>
               </div>
             )}
@@ -204,12 +270,6 @@ const MainWorkspaceContent: React.FC = () => {
           </div>
         </main>
       </div>
-
-      {/* CNB PDF Upload Modal */}
-      <PDFParserModal
-        isOpen={isPDFModalOpen}
-        onClose={() => setIsPDFModalOpen(false)}
-      />
 
       <style>{`
         .app-shell {
@@ -352,8 +412,8 @@ const MainWorkspaceContent: React.FC = () => {
         .chat-input-form {
           flex-shrink: 0;
           display: flex;
-          align-items: flex-end;
-          gap: 0.75rem;
+          flex-direction: column;
+          gap: 0.5rem;
           background: #ffffff;
           border: 1px solid #cbd5e1;
           border-radius: 0.85rem;
@@ -365,6 +425,74 @@ const MainWorkspaceContent: React.FC = () => {
         .chat-input-form:focus-within {
           border-color: #2563eb;
           box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12);
+        }
+
+        .chat-attachment-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          padding: 0.35rem 0.65rem;
+          border-radius: 0.5rem;
+          font-size: 0.8rem;
+          align-self: flex-start;
+        }
+
+        .chip-icon {
+          color: #1d4ed8;
+        }
+
+        .chip-name {
+          font-weight: 600;
+          color: #1e40af;
+        }
+
+        .chip-size {
+          color: #64748b;
+          font-size: 0.725rem;
+        }
+
+        .chip-remove-btn {
+          background: transparent;
+          border: none;
+          color: #64748b;
+          cursor: pointer;
+          padding: 0.15rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 0.25rem;
+        }
+
+        .chip-remove-btn:hover {
+          color: #ef4444;
+          background: #fee2e2;
+        }
+
+        .chat-input-row {
+          display: flex;
+          align-items: flex-end;
+          gap: 0.5rem;
+          width: 100%;
+        }
+
+        .btn-attach-file {
+          background: transparent;
+          border: none;
+          color: #64748b;
+          padding: 0.45rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .btn-attach-file:hover {
+          color: #1d4ed8;
+          background: #f1f5f9;
         }
 
         .chat-textarea-input {

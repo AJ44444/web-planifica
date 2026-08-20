@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { 
   ChatMessage, 
   Thread, 
-  PDFUploadProgress,
   PlanificacionClase,
   InstrumentoEvaluacion,
   RecursoMultimodal
@@ -17,7 +16,6 @@ interface LangGraphContextType {
   messages: ChatMessage[];
   isStreaming: boolean;
   isServerOnline: boolean;
-  pdfProgress: PDFUploadProgress;
   activeViewTab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history';
   currentPlanData: PlanificacionClase | null;
   currentRubricData: InstrumentoEvaluacion | null;
@@ -28,7 +26,6 @@ interface LangGraphContextType {
   selectThread: (threadId: string) => void;
   deleteThreadById: (threadId: string) => Promise<void>;
   resetChatToHero: () => void;
-  uploadCNBPDF: (file: File) => Promise<void>;
   checkHealth: () => Promise<void>;
 }
 
@@ -48,11 +45,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [currentPlanData, setCurrentPlanData] = useState<PlanificacionClase | null>(null);
   const [currentRubricData, setCurrentRubricData] = useState<InstrumentoEvaluacion | null>(null);
   const [currentMultimodalData, setCurrentMultimodalData] = useState<RecursoMultimodal[] | null>(null);
-
-  const [pdfProgress, setPdfProgress] = useState<PDFUploadProgress>({
-    isUploading: false,
-    progress: 0,
-  });
 
   const checkHealth = async () => {
     const online = await checkServerHealth();
@@ -240,53 +232,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   };
 
-  const uploadCNBPDF = async (file: File) => {
-    try {
-      setPdfProgress({
-        isUploading: true,
-        progress: 10,
-        filename: file.name,
-        statusText: 'Cargando archivo PDF en memoria...',
-      });
-
-      for (let p = 25; p <= 100; p += 25) {
-        await new Promise((res) => setTimeout(res, 600));
-        let statusText = 'Extrayendo texto y estructura del documento...';
-        if (p === 50) statusText = 'Identificando áreas, subáreas e indicadores del CNB...';
-        if (p === 75) statusText = 'Generando índice jerárquico de competencias...';
-        if (p === 100) statusText = '¡Indexación completada exitosamente!';
-
-        setPdfProgress({
-          isUploading: p < 100,
-          progress: p,
-          filename: file.name,
-          extractedNodes: p === 100 ? 42 : Math.floor(p * 0.4),
-          statusText,
-        });
-      }
-
-      const systemNotice: ChatMessage = {
-        id: `sys_${Date.now()}`,
-        role: 'assistant',
-        content: `✅ **Documento CNB Procesado**: Se indexó exitosamente el archivo \`${file.name}\`. Ahora la plataforma puede realizar búsquedas contextualizadas sobre sus competencias.`,
-        timestamp: new Date().toISOString(),
-        agentType: 'pdf_processor',
-        agentName: 'Procesador de PDF CNB',
-      };
-      setMessages((prev) => [...prev, systemNotice]);
-      setActiveViewTab('chat');
-    } catch {
-      setPdfProgress({ isUploading: false, progress: 0 });
-      const errorNotice: ChatMessage = {
-        id: `sys_err_${Date.now()}`,
-        role: 'assistant',
-        content: `⚠️ Ocurrió un inconveniente al procesar el archivo PDF. Por favor verifica que el documento sea válido e intenta de nuevo.`,
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, errorNotice]);
-    }
-  };
-
   return (
     <LangGraphContext.Provider
       value={{
@@ -295,7 +240,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         messages,
         isStreaming,
         isServerOnline,
-        pdfProgress,
         activeViewTab,
         currentPlanData,
         currentRubricData,
@@ -306,7 +250,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         selectThread,
         deleteThreadById,
         resetChatToHero,
-        uploadCNBPDF,
         checkHealth,
       }}
     >

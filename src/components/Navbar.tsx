@@ -1,13 +1,9 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLangGraph } from '../context/LangGraphContext';
-import { BookOpen, Plus, Upload, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
+import { BookOpen, Plus, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
 
-interface NavbarProps {
-  onOpenPDFModal: () => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ onOpenPDFModal }) => {
+export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { isServerOnline, threads, currentThreadId, selectThread, createNewThread } = useLangGraph();
 
@@ -62,11 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPDFModal }) => {
       </div>
 
       <div className="navbar-right">
-        {/* CNB PDF Upload Trigger */}
-        <button className="btn btn-primary" onClick={onOpenPDFModal}>
-          <Upload size={16} />
-          <span>Cargar CNB PDF</span>
-        </button>
+        {/* Teacher Profile */}
 
         {/* Teacher Profile */}
         {user && (

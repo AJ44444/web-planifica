@@ -46,48 +46,67 @@ export async function exportToWord(
     // ==========================================
     // 1. ENCABEZADO OFICIAL (Centrado y Negrita)
     // ==========================================
-    const headingParagraphs = [
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { before: 120, after: 60 },
-        children: [
-          new TextRun({
-            text: (enc.centro_educativo || 'CENTRO EDUCATIVO').toUpperCase(),
-            bold: true,
-            size: 28, // 14pt
-            font: 'Arial',
-          }),
-        ],
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 60 },
-        children: [
-          new TextRun({
-            text: (enc.lugar || 'UBICACIÓN').toUpperCase(),
-            bold: true,
-            size: 24, // 12pt
-            font: 'Arial',
-          }),
-        ],
-      }),
-      new Paragraph({
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 240 },
-        children: [
-          new TextRun({
-            text: (enc.carrera || 'CICLO DE EDUCACIÓN BÁSICA').toUpperCase(),
-            bold: true,
-            size: 24, // 12pt
-            font: 'Arial',
-          }),
-        ],
-      }),
-    ];
+    const headingParagraphs: Paragraph[] = [];
+
+    const centroEducativoText = (enc.centro_educativo || '').trim();
+    if (centroEducativoText) {
+      headingParagraphs.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 120, after: 60 },
+          children: [
+            new TextRun({
+              text: centroEducativoText.toUpperCase(),
+              bold: true,
+              size: 28, // 14pt
+              font: 'Arial',
+            }),
+          ],
+        })
+      );
+    }
+
+    const lugarText = (enc.lugar || '').trim();
+    if (lugarText) {
+      headingParagraphs.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 60 },
+          children: [
+            new TextRun({
+              text: lugarText.toUpperCase(),
+              bold: true,
+              size: 24, // 12pt
+              font: 'Arial',
+            }),
+          ],
+        })
+      );
+    }
+
+    const carreraText = (enc.carrera || '').trim();
+    if (carreraText) {
+      headingParagraphs.push(
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 240 },
+          children: [
+            new TextRun({
+              text: carreraText.toUpperCase(),
+              bold: true,
+              size: 24, // 12pt
+              font: 'Arial',
+            }),
+          ],
+        })
+      );
+    }
 
     // ==========================================
     // 2. TABLA 1: DATOS GENERALES DEL CURSO
     // ==========================================
+    const gradoSeccionText = [enc.grado || '', enc.seccion || ''].filter(Boolean).join(' ');
+
     const table1 = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
       rows: [
@@ -97,7 +116,7 @@ export async function exportToWord(
               width: { size: 25, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
-                  children: [new TextRun({ text: 'Grado y Sección', bold: true, font: 'Arial', size: 22 })],
+                  children: [new TextRun({ text: 'Grado', bold: true, font: 'Arial', size: 22 })],
                 }),
               ],
             }),
@@ -105,7 +124,7 @@ export async function exportToWord(
               width: { size: 75, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
-                  children: [new TextRun({ text: `${enc.grado || ''} ${enc.seccion || ''}`, font: 'Arial', size: 22 })],
+                  children: [new TextRun({ text: gradoSeccionText, font: 'Arial', size: 22 })],
                 }),
               ],
             }),
@@ -117,7 +136,7 @@ export async function exportToWord(
               width: { size: 25, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
-                  children: [new TextRun({ text: 'Subárea / Curso', bold: true, font: 'Arial', size: 22 })],
+                  children: [new TextRun({ text: 'Curso', bold: true, font: 'Arial', size: 22 })],
                 }),
               ],
             }),
@@ -165,7 +184,7 @@ export async function exportToWord(
               width: { size: 75, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
-                  children: [new TextRun({ text: String(enc.duracion || '45 min'), font: 'Arial', size: 22 })],
+                  children: [new TextRun({ text: enc.duracion || '', font: 'Arial', size: 22 })],
                 }),
               ],
             }),
@@ -243,13 +262,15 @@ export async function exportToWord(
         }
         if (indObj.contenidos && indObj.contenidos.length > 0) {
           indObj.contenidos.forEach((c) => {
-            contenidosParagraphs.push(
-              new Paragraph({
-                bullet: { level: 0 },
-                spacing: { after: 40 },
-                children: [new TextRun({ text: c, font: 'Arial', size: 20 })],
-              })
-            );
+            if (c) {
+              contenidosParagraphs.push(
+                new Paragraph({
+                  bullet: { level: 0 },
+                  spacing: { after: 40 },
+                  children: [new TextRun({ text: c, font: 'Arial', size: 20 })],
+                })
+              );
+            }
           });
         }
       });
@@ -263,16 +284,21 @@ export async function exportToWord(
 
       const activitiesParagraphs: Paragraph[] = [];
       (fila.actividades_aprendizaje || []).forEach((act) => {
+        const faseLabel = act.fase ? `[${act.fase.toUpperCase()}] ` : '';
         activitiesParagraphs.push(
           new Paragraph({
             spacing: { after: 60 },
             children: [
-              new TextRun({
-                text: `[${(act.fase || '').toUpperCase()}] `,
-                bold: true,
-                font: 'Arial',
-                size: 18,
-              }),
+              ...(faseLabel
+                ? [
+                    new TextRun({
+                      text: faseLabel,
+                      bold: true,
+                      font: 'Arial',
+                      size: 18,
+                    }),
+                  ]
+                : []),
               new TextRun({
                 text: act.descripcion || '',
                 font: 'Arial',
@@ -326,101 +352,75 @@ export async function exportToWord(
     // ==========================================
     // 4. TABLA 3: INSTRUMENTOS DE EVALUACIÓN
     // ==========================================
-    const planTools = rubricData?.herramientas || (rubricData ? [rubricData] : []);
+    const planTools: any[] = rubricData?.herramientas && rubricData.herramientas.length > 0
+      ? rubricData.herramientas
+      : (rubricData?.instrumento_generado?.criterios ? [{
+          tipo: rubricData.tipo || '',
+          titulo: rubricData.titulo || '',
+          escala: rubricData.instrumento_generado.escala || [],
+          criterios: rubricData.instrumento_generado.criterios || []
+        }] : (rubricData ? [rubricData] : []));
 
     if (planTools && planTools.length > 0) {
-      docChildren.push(
-        new Paragraph({
-          pageBreakBefore: true,
-          alignment: AlignmentType.CENTER,
-          spacing: { before: 240, after: 120 },
-          children: [
-            new TextRun({
-              text: 'INSTRUMENTOS DE EVALUACIÓN',
-              bold: true,
-              size: 28,
-              font: 'Arial',
-              color: '000000',
-            }),
-          ],
-        })
-      );
+      const validTools = planTools.filter((t: any) => {
+        const crits = t?.criterios || t?.instrumento_generado?.criterios;
+        return crits && Array.isArray(crits) && crits.length > 0;
+      });
 
-      planTools.forEach((inst: any, idx: number) => {
-        const tituloTool = inst.titulo || `Instrumento #${idx + 1}`;
-        const tipoTool = (inst.tipo || 'rubrica').toUpperCase();
-
+      if (validTools.length > 0) {
         docChildren.push(
           new Paragraph({
-            heading: HeadingLevel.HEADING_3,
-            spacing: { before: 160, after: 80 },
+            pageBreakBefore: true,
+            alignment: AlignmentType.CENTER,
+            spacing: { before: 240, after: 120 },
             children: [
               new TextRun({
-                text: `${idx + 1}. ${tituloTool} (${tipoTool})`,
+                text: 'INSTRUMENTOS DE EVALUACIÓN',
                 bold: true,
-                size: 22,
+                size: 28,
                 font: 'Arial',
+                color: '000000',
               }),
             ],
           })
         );
 
-        const scale: string[] = inst.escala || inst.instrumento_generado?.escala || ['Excelente', 'Satisfactorio', 'En proceso', 'Necesita apoyo'];
-        const criterios: any[] = inst.criterios || inst.instrumento_generado?.criterios || [];
+        validTools.forEach((inst: any, idx: number) => {
+          const tituloTool = (inst.titulo || '').trim();
+          const fallbackType = inst.tipo ? (inst.tipo).toUpperCase() : '';
+          const headerLabel = tituloTool || fallbackType;
 
-        const tableHeaders = [
-          new TableCell({
-            width: { size: 35, type: WidthType.PERCENTAGE },
-            children: [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: 'Criterio de Evaluación',
-                    bold: true,
-                    font: 'Arial',
-                    size: 20,
-                  }),
-                ],
-              }),
-            ],
-          }),
-          ...scale.map(
-            (esc: string) =>
-              new TableCell({
-                width: {
-                  size: 65 / scale.length,
-                  type: WidthType.PERCENTAGE,
-                },
-                children: [
-                  new Paragraph({
-                    alignment: AlignmentType.CENTER,
-                    children: [
-                      new TextRun({
-                        text: esc,
-                        bold: true,
-                        font: 'Arial',
-                        size: 20,
-                      }),
-                    ],
-                  }),
-                ],
-              })
-          ),
-        ];
+          docChildren.push(
+            new Paragraph({
+              heading: HeadingLevel.HEADING_3,
+              spacing: { before: 160, after: 80 },
+              children: [
+                new TextRun({
+                  text: `${idx + 1}. ${headerLabel}`,
+                  bold: true,
+                  size: 22,
+                  font: 'Arial',
+                }),
+              ],
+            })
+          );
 
-        const tableRows = [new TableRow({ children: tableHeaders })];
+          const scale: string[] = (Array.isArray(inst.escala) && inst.escala.length > 0)
+            ? inst.escala
+            : (inst.instrumento_generado?.escala || []);
 
-        criterios.forEach((crit: any, cIdx: number) => {
-          const critName = crit.nombre || crit.aspecto_o_criterio || `Criterio #${cIdx + 1}`;
-          const defs = crit.definiciones || [];
+          const criterios: any[] = Array.isArray(inst.criterios)
+            ? inst.criterios
+            : (inst.instrumento_generado?.criterios || []);
 
-          const cells = [
+          const tableHeaders = [
             new TableCell({
+              width: { size: 35, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
                   children: [
                     new TextRun({
-                      text: critName,
+                      text: 'Criterio de Evaluación',
                       bold: true,
                       font: 'Arial',
                       size: 20,
@@ -429,36 +429,82 @@ export async function exportToWord(
                 }),
               ],
             }),
-            ...scale.map((_: string, eIdx: number) => {
-              const cellContent = defs[eIdx] || '';
-              return new TableCell({
+            ...scale.map(
+              (esc: string) =>
+                new TableCell({
+                  width: {
+                    size: 65 / (scale.length || 1),
+                    type: WidthType.PERCENTAGE,
+                  },
+                  children: [
+                    new Paragraph({
+                      alignment: AlignmentType.CENTER,
+                      children: [
+                        new TextRun({
+                          text: esc || '',
+                          bold: true,
+                          font: 'Arial',
+                          size: 20,
+                        }),
+                      ],
+                    }),
+                  ],
+                })
+            ),
+          ];
+
+          const tableRows = [new TableRow({ children: tableHeaders })];
+
+          criterios.forEach((crit: any) => {
+            const critName = crit.nombre || crit.aspecto_o_criterio || crit.criterio || '';
+            const defs = crit.definiciones || [];
+
+            const cells = [
+              new TableCell({
                 children: [
                   new Paragraph({
-                    alignment: AlignmentType.CENTER,
                     children: [
                       new TextRun({
-                        text: cellContent,
+                        text: critName,
+                        bold: false,
                         font: 'Arial',
                         size: 20,
                       }),
                     ],
                   }),
                 ],
-              });
-            }),
-          ];
-          tableRows.push(new TableRow({ children: cells }));
+              }),
+              ...scale.map((_: string, eIdx: number) => {
+                const cellContent = defs[eIdx] || '';
+                return new TableCell({
+                  children: [
+                    new Paragraph({
+                      alignment: AlignmentType.CENTER,
+                      children: [
+                        new TextRun({
+                          text: cellContent,
+                          font: 'Arial',
+                          size: 20,
+                        }),
+                      ],
+                    }),
+                  ],
+                });
+              }),
+            ];
+            tableRows.push(new TableRow({ children: cells }));
+          });
+
+          docChildren.push(
+            new Table({
+              width: { size: 100, type: WidthType.PERCENTAGE },
+              rows: tableRows,
+            })
+          );
+
+          docChildren.push(new Paragraph({ spacing: { after: 120 } }));
         });
-
-        docChildren.push(
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: tableRows,
-          })
-        );
-
-        docChildren.push(new Paragraph({ spacing: { after: 120 } }));
-      });
+      }
     }
 
     // ==========================================
@@ -493,7 +539,7 @@ export async function exportToWord(
             width: { size: colWidth1, type: WidthType.DXA },
             children: [
               new Paragraph({
-                children: [new TextRun({ text: 'Formato / Tipo', bold: true, font: 'Arial', size: 20 })],
+                children: [new TextRun({ text: 'Formato', bold: true, font: 'Arial', size: 20 })],
               }),
             ],
           }),
@@ -501,7 +547,7 @@ export async function exportToWord(
             width: { size: colWidth2, type: WidthType.DXA },
             children: [
               new Paragraph({
-                children: [new TextRun({ text: 'Título y Descripción', bold: true, font: 'Arial', size: 20 })],
+                children: [new TextRun({ text: 'Título', bold: true, font: 'Arial', size: 20 })],
               }),
             ],
           }),
@@ -509,7 +555,7 @@ export async function exportToWord(
             width: { size: colWidth3, type: WidthType.DXA },
             children: [
               new Paragraph({
-                children: [new TextRun({ text: 'Enlace / URL', bold: true, font: 'Arial', size: 20 })],
+                children: [new TextRun({ text: 'Enlace', bold: true, font: 'Arial', size: 20 })],
               }),
             ],
           }),
@@ -519,9 +565,8 @@ export async function exportToWord(
       const resourceTableRows = [resourceTableHeaders];
 
       multimodalData.forEach((res) => {
-        const tipoText = (res.tipo || 'Recurso').toUpperCase();
-        const tituloText = res.titulo || 'Recurso Sugerido';
-        const descText = res.descripcion_recurso || '';
+        const tipoText = res.tipo ? res.tipo.toUpperCase() : '';
+        const tituloText = res.titulo || '';
         const urlText = formatUrlForWord(res.url || '');
 
         resourceTableRows.push(
@@ -531,7 +576,7 @@ export async function exportToWord(
                 width: { size: colWidth1, type: WidthType.DXA },
                 children: [
                   new Paragraph({
-                    children: [new TextRun({ text: tipoText, bold: true, font: 'Arial', size: 18 })],
+                    children: [new TextRun({ text: tipoText, bold: false, font: 'Arial', size: 18 })],
                   }),
                 ],
               }),
@@ -539,16 +584,8 @@ export async function exportToWord(
                 width: { size: colWidth2, type: WidthType.DXA },
                 children: [
                   new Paragraph({
-                    children: [new TextRun({ text: tituloText, bold: true, font: 'Arial', size: 20 })],
+                    children: [new TextRun({ text: tituloText, bold: false, font: 'Arial', size: 20 })],
                   }),
-                  ...(descText
-                    ? [
-                        new Paragraph({
-                          spacing: { before: 40 },
-                          children: [new TextRun({ text: descText, font: 'Arial', size: 18 })],
-                        }),
-                      ]
-                    : []),
                 ],
               }),
               new TableCell({
@@ -611,7 +648,7 @@ export async function exportToWord(
     // 7. EMPAQUETADO Y DESCARGA
     // ==========================================
     const blob = await Packer.toBlob(doc);
-    const rawCourseName = enc.curso || enc.carrera || enc.grado || 'general';
+    const rawCourseName = enc.curso || enc.carrera || enc.grado || '';
     const safeCourse = rawCourseName
       .toLowerCase()
       .normalize('NFD')
@@ -619,9 +656,11 @@ export async function exportToWord(
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '');
 
-    saveDocument(blob, `planificacion_${safeCourse || 'docente'}.docx`);
+    saveDocument(blob, safeCourse ? `planificacion_${safeCourse}.docx` : 'planificacion.docx');
 
   } catch (err: any) {
     console.error('Error al exportar a Word:', err);
   }
 }
+
+export const exportToWordIned = exportToWord;
