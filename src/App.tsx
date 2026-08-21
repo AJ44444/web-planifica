@@ -89,15 +89,30 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+    });
+  };
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if ((!inputPrompt.trim() && !attachedFile) || isStreaming) return;
     
-    const fileToUpload = attachedFile;
     let textToSend = inputPrompt.trim();
-    if (fileToUpload) {
-      const fileNote = `[Archivo CNB Adjunto: ${fileToUpload.name}]`;
-      textToSend = textToSend ? `${textToSend}\n\n${fileNote}` : `Consultando con documento CNB adjunto: ${fileToUpload.name}`;
+    if (attachedFile) {
+      try {
+        const base64Str = await fileToBase64(attachedFile);
+        const prefix = textToSend 
+          ? `${textToSend}\n\n[Documento CNB: ${attachedFile.name}]\n${base64Str}`
+          : `Por favor procesa el siguiente documento PDF del CNB (${attachedFile.name}): ${base64Str}`;
+        textToSend = prefix;
+      } catch (err) {
+        console.error('Error al convertir el PDF a base64:', err);
+      }
     }
 
     setInputPrompt('');
@@ -105,7 +120,7 @@ const MainWorkspaceContent: React.FC = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-    await sendMessage(textToSend, fileToUpload);
+    await sendMessage(textToSend);
   };
 
   return (

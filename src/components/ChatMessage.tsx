@@ -27,7 +27,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
   const isUser = message.role === 'user';
   const userPhoto = user?.picture;
   const showFullPlanMessage = !isUser && (message.isFullPlanResponse || isFullPlanResponse(message.content));
-  const displayContent = showFullPlanMessage ? PREDETERMINED_PLAN_NOTIFICATION : message.content;
+  let displayContent = showFullPlanMessage ? PREDETERMINED_PLAN_NOTIFICATION : message.content;
+
+  if (displayContent && displayContent.includes('data:application/pdf;base64,')) {
+    displayContent = displayContent.replace(/data:application\/pdf;base64,[A-Za-z0-9+/=]+/g, '📄 *(Documento PDF del CNB adjunto)*');
+  }
 
   // Render floating dots ONLY while actively streaming
   const showLoadingDots = !isUser && isStreaming && !message.content;
