@@ -662,5 +662,3 @@ export async function exportToWord(
     console.error('Error al exportar a Word:', err);
   }
 }
-
-export const exportToWordIned = exportToWord;

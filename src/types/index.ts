@@ -112,11 +112,3 @@ export interface Thread {
   createdAt: string;
   messageCount: number;
 }
-
-export interface PDFUploadProgress {
-  isUploading: boolean;
-  progress: number;
-  filename?: string;
-  extractedNodes?: number;
-  statusText?: string;
-}
