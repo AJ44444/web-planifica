@@ -266,29 +266,31 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
                 <span>Actividades de Aprendizaje</span>
               </h3>
 
-              <table className="plan-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '25%' }}>Fase Metodológica</th>
-                    <th>Detalle e Instrucciones de la Actividad</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {actividades.map((act: any, actIdx: number) => {
-                    const faseStr = act.fase ? String(act.fase).toLowerCase() : 'desarrollo';
-                    return (
-                      <tr key={act.id_actividad || actIdx}>
-                        <td>
-                          <span className={`phase-pill phase-${faseStr}`}>
-                            Fase: {faseStr.toUpperCase()}
-                          </span>
-                        </td>
-                        <td>{act.descripcion}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="table-responsive">
+                <table className="plan-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '25%' }}>Fase Metodológica</th>
+                      <th>Detalle e Instrucciones de la Actividad</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {actividades.map((act: any, actIdx: number) => {
+                      const faseStr = act.fase ? String(act.fase).toLowerCase() : 'desarrollo';
+                      return (
+                        <tr key={act.id_actividad || actIdx}>
+                          <td>
+                            <span className={`phase-pill phase-${faseStr}`}>
+                              Fase: {faseStr.toUpperCase()}
+                            </span>
+                          </td>
+                          <td>{act.descripcion}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
@@ -676,13 +678,34 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
           font-weight: 700;
         }
 
+        .table-responsive {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
         .plan-table {
           width: 100%;
+          min-width: 540px;
           border-collapse: separate;
           border-spacing: 0;
           border: 1px solid #e2e8f0;
           border-radius: 0.65rem;
           overflow: hidden;
+        }
+
+        @media (max-width: 768px) {
+          .plan-visualizer-container {
+            padding: 1rem;
+          }
+          .tree-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 0.5rem;
+          }
+          .tree-branches-wrapper {
+            min-width: 320px;
+          }
         }
 
         .plan-table th {

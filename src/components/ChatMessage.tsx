@@ -186,8 +186,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
           border-radius: 0.85rem;
           box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
           min-width: 0;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
           overflow-wrap: break-word;
           word-break: break-word;
+        }
+
+        @media (max-width: 768px) {
+          .message-bubble-wrapper {
+            max-width: 100%;
+          }
+          .user-row .message-bubble-wrapper {
+            max-width: 90%;
+          }
+          .message-bubble {
+            padding: 0.75rem 0.95rem;
+          }
         }
 
         .user-bubble {
