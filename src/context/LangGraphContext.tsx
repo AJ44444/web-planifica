@@ -22,7 +22,7 @@ interface LangGraphContextType {
   currentMultimodalData: RecursoMultimodal[] | null;
   setActiveViewTab: (tab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history') => void;
   sendMessage: (text: string) => Promise<void>;
-  createNewThread: () => Promise<string>;
+  createNewThread: () => Promise<string | null>;
   selectThread: (threadId: string) => void;
   deleteThreadById: (threadId: string) => Promise<void>;
   resetChatToHero: () => void;
@@ -73,21 +73,27 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     initThreads();
   }, [isAuthenticated, token]);
 
-  const createNewThread = async (): Promise<string> => {
-    const newId = await createThread();
-    const newThread: Thread = {
-      id: newId,
-      title: `Conversación ${threads.length + 1}`,
-      createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      messageCount: 0,
-    };
-    setThreads((prev) => [newThread, ...prev]);
-    setCurrentThreadId(newId);
-    setMessages([]);
-    setCurrentPlanData(null);
-    setCurrentRubricData(null);
-    setCurrentMultimodalData(null);
-    return newId;
+  const createNewThread = async (): Promise<string | null> => {
+    try {
+      const newId = await createThread();
+      if (!newId) return null;
+      const newThread: Thread = {
+        id: newId,
+        title: `Conversación ${threads.length + 1}`,
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        messageCount: 0,
+      };
+      setThreads((prev) => [newThread, ...prev]);
+      setCurrentThreadId(newId);
+      setMessages([]);
+      setCurrentPlanData(null);
+      setCurrentRubricData(null);
+      setCurrentMultimodalData(null);
+      return newId;
+    } catch (err) {
+      console.error('No se pudo crear el hilo en el servidor:', err);
+      return null;
+    }
   };
 
   const selectThread = async (threadId: string) => {
@@ -130,7 +136,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (remaining.length > 0) {
         await selectThread(remaining[0].id);
       } else {
-        await createNewThread();
+        resetChatToHero();
       }
     }
   };
@@ -147,10 +153,21 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
 
-    // Ensure mandatory thread_id exists before starting graph execution
+    // Ensure mandatory thread_id exists on server before starting graph execution
     let activeThreadId = currentThreadId;
     if (!activeThreadId) {
       activeThreadId = await createNewThread();
+    }
+
+    if (!activeThreadId) {
+      const errorMsg: ChatMessage = {
+        id: `err_${Date.now()}`,
+        role: 'assistant',
+        content: '⚠️ No fue posible conectar con el servidor para crear una nueva conversación. Verifica que el servidor de la plataforma esté en línea.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, errorMsg]);
+      return;
     }
 
     const userMsg: ChatMessage = {

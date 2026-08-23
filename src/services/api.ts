@@ -25,20 +25,20 @@ export async function checkServerHealth(): Promise<boolean> {
 }
 
 export async function createThread(): Promise<string> {
-  try {
-    const response = await fetch(`${API_BASE_URL}/threads`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({}),
-    });
-    if (response.ok) {
-      const data = await response.json();
-      return data.thread_id || data.id || `thread_${Date.now()}`;
-    }
-  } catch (error) {
-    console.warn('LangGraph server unreachable:', error);
+  const response = await fetch(`${API_BASE_URL}/threads`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({}),
+  });
+  if (!response.ok) {
+    throw new Error(`Error en el servidor al crear el hilo (${response.status}: ${response.statusText})`);
   }
-  return `thread_local_${Date.now()}`;
+  const data = await response.json();
+  const threadId = data.thread_id || data.id;
+  if (!threadId) {
+    throw new Error('El servidor no retornó un ID de hilo válido');
+  }
+  return threadId;
 }
 
 export async function getThreads(): Promise<Thread[]> {
