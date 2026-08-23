@@ -14,7 +14,7 @@ function getAuthHeaders(): HeadersInit {
 
 export async function checkServerHealth(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/ok`, {
+    const response = await fetch(`${API_BASE_URL}`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
