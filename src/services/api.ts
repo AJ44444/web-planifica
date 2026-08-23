@@ -17,6 +17,7 @@ export async function checkServerHealth(): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/ok`, {
       method: 'GET',
       headers: getAuthHeaders(),
+      credentials: 'omit'
     });
     return response.ok;
   } catch {
@@ -29,6 +30,7 @@ export async function createThread(): Promise<string> {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify({}),
+    credentials: 'omit'
   });
   if (!response.ok) {
     throw new Error('Fallo la conexión con el servidor');
@@ -48,6 +50,7 @@ export async function getThreads(): Promise<Thread[]> {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ limit: 100, metadata: {} }),
+      credentials: 'omit'
     });
 
     if (response.ok) {
@@ -75,6 +78,7 @@ export async function deleteThread(threadId: string): Promise<boolean> {
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}`, {
       method: 'DELETE',
       headers: getAuthHeaders(),
+      credentials: 'omit'
     });
     return response.ok;
   } catch {
@@ -88,6 +92,7 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}/history`, {
       method: 'GET',
       headers: getAuthHeaders(),
+      credentials: 'omit'
     });
     if (response.ok) {
       const data = await response.json();
@@ -137,6 +142,7 @@ export async function streamLangGraphRun(
           messages: [{ role: 'user', content: userMessageText }],
         },
       }),
+      credentials: 'omit'
     });
 
     if (!response.ok || !response.body) {
