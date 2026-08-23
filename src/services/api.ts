@@ -16,8 +16,7 @@ export async function checkServerHealth(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/ok`, {
       method: 'GET',
-      headers: getAuthHeaders(),
-      credentials: 'omit'
+      headers: getAuthHeaders()
     });
     return response.ok;
   } catch {
@@ -29,8 +28,7 @@ export async function createThread(): Promise<string> {
   const response = await fetch(`${API_BASE_URL}/threads`, {
     method: 'POST',
     headers: getAuthHeaders(),
-    body: JSON.stringify({}),
-    credentials: 'omit'
+    body: JSON.stringify({})
   });
   if (!response.ok) {
     throw new Error('Fallo la conexión con el servidor');
@@ -49,8 +47,7 @@ export async function getThreads(): Promise<Thread[]> {
     const response = await fetch(`${API_BASE_URL}/threads/search`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ limit: 100, metadata: {} }),
-      credentials: 'omit'
+      body: JSON.stringify({ limit: 100, metadata: {} })
     });
 
     if (response.ok) {
@@ -77,8 +74,7 @@ export async function deleteThread(threadId: string): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
-      credentials: 'omit'
+      headers: getAuthHeaders()
     });
     return response.ok;
   } catch {
@@ -91,8 +87,7 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
     // Get thread history according to como_consultar_threads.md (GET /threads/{thread_id}/history)
     const response = await fetch(`${API_BASE_URL}/threads/${threadId}/history`, {
       method: 'GET',
-      headers: getAuthHeaders(),
-      credentials: 'omit'
+      headers: getAuthHeaders()
     });
     if (response.ok) {
       const data = await response.json();
@@ -141,8 +136,7 @@ export async function streamLangGraphRun(
         input: {
           messages: [{ role: 'user', content: userMessageText }],
         },
-      }),
-      credentials: 'omit'
+      })
     });
 
     if (!response.ok || !response.body) {
