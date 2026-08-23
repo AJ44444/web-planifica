@@ -35,9 +35,13 @@ function formatUrlForWord(url: string): string {
 export async function exportToWord(
   planData?: PlanificacionClase | null,
   rubricData?: InstrumentoEvaluacion | null,
-  multimodalData?: RecursoMultimodal[] | null
-) {
-  if (!planData || !planData.encabezado) return;
+  multimodalData?: RecursoMultimodal[] | null,
+  onErrorNotification?: (msg: string) => void
+): Promise<void> {
+  if (!planData || !planData.encabezado) {
+    if (onErrorNotification) onErrorNotification('Datos de planificación incompletos.');
+    return;
+  }
 
   const enc = planData.encabezado;
   const filas = planData.desarrollo_curricular || [];
@@ -658,7 +662,9 @@ export async function exportToWord(
 
     saveDocument(blob, safeCourse ? `planificacion_${safeCourse}.docx` : 'planificacion.docx');
 
-  } catch (err: any) {
-    console.error('Error al exportar a Word:', err);
+  } catch {
+    if (onErrorNotification) {
+      onErrorNotification('No fue posible generar la exportación a Microsoft Word. Por favor, intenta de nuevo.');
+    }
   }
 }

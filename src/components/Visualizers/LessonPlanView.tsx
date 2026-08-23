@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { PlanificacionClase, InstrumentoEvaluacion, RecursoMultimodal } from '../../types';
 import { exportToWord } from '../../utils/wordExporter';
+import { useLangGraph } from '../../context/LangGraphContext';
 import { 
   BookOpen, 
   Target, 
@@ -26,6 +27,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
   rubricData,
   multimodalData
 }) => {
+  const { showErrorNotification } = useLangGraph();
   // Selected tree node path state for interactive branch highlight
   const [selectedNode, setSelectedNode] = useState<{
     filaId: number;
@@ -132,7 +134,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
 
         <button
           className="btn-export-word"
-          onClick={() => exportToWord(data, rubricData, multimodalData)}
+          onClick={() => exportToWord(data, rubricData, multimodalData, showErrorNotification)}
           title="Exportar planificación a Microsoft Word (.docx)"
         >
           <FileDown size={16} /> Exportar

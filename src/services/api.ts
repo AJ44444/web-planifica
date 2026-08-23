@@ -31,12 +31,12 @@ export async function createThread(): Promise<string> {
     body: JSON.stringify({}),
   });
   if (!response.ok) {
-    throw new Error(`Error en el servidor al crear el hilo (${response.status}: ${response.statusText})`);
+    throw new Error('Fallo la conexión con el servidor');
   }
   const data = await response.json();
   const threadId = data.thread_id || data.id;
   if (!threadId) {
-    throw new Error('El servidor no retornó un ID de hilo válido');
+    throw new Error('Fallo la conexión con el servidor');
   }
   return threadId;
 }
@@ -64,8 +64,8 @@ export async function getThreads(): Promise<Thread[]> {
         }));
       }
     }
-  } catch (error) {
-    console.warn('Failed to fetch threads via POST /threads/search:', error);
+  } catch {
+    // Fallback gracefully without console logs
   }
   return [];
 }
@@ -77,8 +77,7 @@ export async function deleteThread(threadId: string): Promise<boolean> {
       headers: getAuthHeaders(),
     });
     return response.ok;
-  } catch (error) {
-    console.warn(`Failed to delete thread ${threadId}:`, error);
+  } catch {
     return false;
   }
 }
@@ -109,8 +108,8 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
       }
       return loadedMsgs;
     }
-  } catch (error) {
-    console.warn('Failed to fetch thread history:', error);
+  } catch {
+    // Fallback gracefully without console logs
   }
   return [];
 }
@@ -141,7 +140,7 @@ export async function streamLangGraphRun(
     });
 
     if (!response.ok || !response.body) {
-      throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+      throw new Error('Fallo la conexión con el servidor');
     }
 
     const reader = response.body.getReader();
@@ -203,7 +202,6 @@ export async function streamLangGraphRun(
       structuredData,
     });
   } catch (err: any) {
-    console.error('SSE stream error:', err);
     if (fullContent && fullContent.trim().length > 0) {
       // Content was received from agent before connection closed; preserve and complete
       const structuredData = parseAgentResponse(fullContent);
@@ -216,7 +214,7 @@ export async function streamLangGraphRun(
       });
     } else {
       // Real API failure with 0 content delivered
-      callbacks.onError(err instanceof Error ? err : new Error(String(err)));
+      callbacks.onError(new Error('Fallo la conexión con el servidor'));
     }
   }
 }

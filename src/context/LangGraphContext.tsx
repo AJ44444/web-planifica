@@ -9,6 +9,7 @@ import type {
 import { createThread, getThreads, getThreadHistory, deleteThread, streamLangGraphRun, checkServerHealth } from '../services/api';
 import { parseAgentResponse, isFullPlanResponse } from '../utils/parser';
 import { useAuth } from './AuthContext';
+import { ErrorModal } from '../components/ErrorModal';
 
 interface LangGraphContextType {
   currentThreadId: string | null;
@@ -20,6 +21,7 @@ interface LangGraphContextType {
   currentPlanData: PlanificacionClase | null;
   currentRubricData: InstrumentoEvaluacion | null;
   currentMultimodalData: RecursoMultimodal[] | null;
+  errorModalMessage: string | null;
   setActiveViewTab: (tab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history') => void;
   sendMessage: (text: string) => Promise<void>;
   createNewThread: () => Promise<string | null>;
@@ -27,6 +29,8 @@ interface LangGraphContextType {
   deleteThreadById: (threadId: string) => Promise<void>;
   resetChatToHero: () => void;
   checkHealth: () => Promise<void>;
+  showErrorNotification: (msg: string) => void;
+  clearErrorNotification: () => void;
 }
 
 const LangGraphContext = createContext<LangGraphContextType | undefined>(undefined);
@@ -38,22 +42,31 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [isServerOnline, setIsServerOnline] = useState<boolean>(false);
+  const [isServerOnline, setIsServerOnline] = useState<boolean>(true);
   const [activeViewTab, setActiveViewTab] = useState<'chat' | 'plan' | 'rubric' | 'multimodal' | 'history'>('chat');
 
   // Dynamic Pydantic structured data states
   const [currentPlanData, setCurrentPlanData] = useState<PlanificacionClase | null>(null);
   const [currentRubricData, setCurrentRubricData] = useState<InstrumentoEvaluacion | null>(null);
   const [currentMultimodalData, setCurrentMultimodalData] = useState<RecursoMultimodal[] | null>(null);
+  const [errorModalMessage, setErrorModalMessage] = useState<string | null>(null);
+
+  const showErrorNotification = (msg: string) => {
+    setErrorModalMessage(msg);
+  };
+
+  const clearErrorNotification = () => {
+    setErrorModalMessage(null);
+  };
 
   const checkHealth = async () => {
-    const online = await checkServerHealth();
-    setIsServerOnline(online);
+    const isOk = await checkServerHealth();
+    setIsServerOnline(isOk);
   };
 
   useEffect(() => {
     checkHealth();
-    const interval = setInterval(checkHealth, 15000);
+    const interval = setInterval(checkHealth, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -76,7 +89,10 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const createNewThread = async (): Promise<string | null> => {
     try {
       const newId = await createThread();
-      if (!newId) return null;
+      if (!newId) {
+        showErrorNotification('Falló la conexión con el servidor. No fue posible crear la conversación.');
+        return null;
+      }
       const newThread: Thread = {
         id: newId,
         title: `Conversación ${threads.length + 1}`,
@@ -90,8 +106,8 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setCurrentRubricData(null);
       setCurrentMultimodalData(null);
       return newId;
-    } catch (err) {
-      console.error('No se pudo crear el hilo en el servidor:', err);
+    } catch {
+      showErrorNotification('Falló la conexión con el servidor. El servidor no se encuentra disponible.');
       return null;
     }
   };
@@ -160,13 +176,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     if (!activeThreadId) {
-      const errorMsg: ChatMessage = {
-        id: `err_${Date.now()}`,
-        role: 'assistant',
-        content: '⚠️ No fue posible conectar con el servidor para crear una nueva conversación. Verifica que el servidor de la plataforma esté en línea.',
-        timestamp: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, errorMsg]);
+      showErrorNotification('Falló la conexión con el servidor. El servidor no se encuentra disponible.');
       return;
     }
 
@@ -238,13 +248,14 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               }
               return {
                 ...msg,
-                content: '⚠️ No fue posible procesar tu consulta con el servidor de la plataforma. Por favor intenta de nuevo en unos momentos.',
+                content: '⚠️ No fue posible procesar tu consulta. El servidor no se encuentra disponible.',
               };
             }
             return msg;
           })
         );
         setIsStreaming(false);
+        showErrorNotification('Falló la conexión con el servidor. El servidor no se encuentra disponible.');
       },
     });
   };
@@ -261,6 +272,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         currentPlanData,
         currentRubricData,
         currentMultimodalData,
+        errorModalMessage,
         setActiveViewTab,
         sendMessage,
         createNewThread,
@@ -268,9 +280,16 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deleteThreadById,
         resetChatToHero,
         checkHealth,
+        showErrorNotification,
+        clearErrorNotification,
       }}
     >
       {children}
+      <ErrorModal
+        isOpen={!!errorModalMessage}
+        message={errorModalMessage || ''}
+        onClose={clearErrorNotification}
+      />
     </LangGraphContext.Provider>
   );
 };

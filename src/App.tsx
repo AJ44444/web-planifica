@@ -29,6 +29,7 @@ const MainWorkspaceContent: React.FC = () => {
     currentMultimodalData,
     resetChatToHero,
     currentThreadId,
+    showErrorNotification,
   } = useLangGraph();
 
   const [inputPrompt, setInputPrompt] = useState('');
@@ -73,13 +74,13 @@ const MainWorkspaceContent: React.FC = () => {
       const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
       if (!isPdf) {
-        alert('Solo se admiten archivos en formato PDF.');
+        showErrorNotification('Solo se admiten archivos en formato PDF.');
         e.target.value = '';
         return;
       }
 
       if (file.size > MAX_SIZE_BYTES) {
-        alert('El archivo supera el tamaño máximo permitido de 10 MB.');
+        showErrorNotification('El archivo supera el tamaño máximo permitido de 10 MB.');
         e.target.value = '';
         return;
       }
@@ -110,8 +111,8 @@ const MainWorkspaceContent: React.FC = () => {
           ? `${textToSend}\n\n[Documento CNB: ${attachedFile.name}]\n${base64Str}`
           : `Por favor procesa el siguiente documento PDF del CNB (${attachedFile.name}): ${base64Str}`;
         textToSend = prefix;
-      } catch (err) {
-        console.error('Error al convertir el PDF a base64:', err);
+      } catch {
+        showErrorNotification('No fue posible procesar el archivo PDF adjunto. Por favor, intenta de nuevo.');
       }
     }
 
