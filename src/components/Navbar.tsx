@@ -59,8 +59,6 @@ export const Navbar: React.FC = () => {
 
       <div className="navbar-right">
         {/* Teacher Profile */}
-
-        {/* Teacher Profile */}
         {user && (
           <div className="user-profile-chip">
             {user.picture ? (
