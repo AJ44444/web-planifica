@@ -1,11 +1,10 @@
-import Cookies from 'js-cookie';
 import type { ChatMessage, Thread } from '../types';
 import { parseAgentResponse } from '../utils/parser';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
 function getAuthHeaders(): HeadersInit {
-  const token = Cookies.get('google_id_token') || '';
+  const token = sessionStorage.getItem('google_id_token') || '';
   return {
     'Content-Type': 'application/json',
     'Authorization': token ? `Bearer ${token}` : '',

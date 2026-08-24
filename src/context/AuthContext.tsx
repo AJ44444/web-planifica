@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
 import type { User } from '../types';
 
-const TOKEN_COOKIE_NAME = 'google_id_token';
+const TOKEN_STORAGE_KEY = 'google_id_token';
 
 interface AuthContextType {
   user: User | null;
@@ -30,8 +29,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // Read session strictly from cookies as per requirements
-    const savedToken = Cookies.get(TOKEN_COOKIE_NAME);
+    // Read session strictly from sessionStorage as per requirements
+    const savedToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
     if (savedToken) {
       setToken(savedToken);
       const decoded = parseJwt(savedToken);
@@ -43,8 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           picture: decoded.picture,
         });
       } else {
-        // Fallback for non-JWT cookie tokens
-        const storedUser = Cookies.get('user_profile_cache');
+        const storedUser = sessionStorage.getItem('user_profile_cache');
         if (storedUser) {
           try {
             setUser(JSON.parse(storedUser));
@@ -58,14 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const loginWithToken = (idToken: string, userPayload?: Partial<User>) => {
-    // 1-day cookie expiration persistence
-    const cookieOptions = {
-      expires: 1, // 1 day
-      sameSite: 'strict' as const,
-      secure: window.location.protocol === 'https:'
-    };
-
-    Cookies.set(TOKEN_COOKIE_NAME, idToken, cookieOptions);
+    sessionStorage.setItem(TOKEN_STORAGE_KEY, idToken);
     setToken(idToken);
 
     const decoded = parseJwt(idToken);
@@ -77,12 +68,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setUser(userInfo);
-    Cookies.set('user_profile_cache', JSON.stringify(userInfo), cookieOptions);
+    sessionStorage.setItem('user_profile_cache', JSON.stringify(userInfo));
   };
 
   const logout = () => {
-    Cookies.remove(TOKEN_COOKIE_NAME);
-    Cookies.remove('user_profile_cache');
+    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
+    sessionStorage.removeItem('user_profile_cache');
     setToken(null);
     setUser(null);
   };

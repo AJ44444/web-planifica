@@ -38,7 +38,7 @@ web-planifica/
 │   │       ├── MultimodalView.tsx     # Galería interactiva de recursos multimodales (video, audio, etc.)
 │   │       └── ThreadHistoryView.tsx  # Historial estructurado y gestión de conversaciones
 │   ├── context/              # Proveedores de estado global (React Context)
-│   │   ├── AuthContext.tsx        # Gestión de sesión con cookies (persistencia de 1 día) y Google OAuth 2.0
+│   │   ├── AuthContext.tsx        # Gestión de sesión y token con sessionStorage y Google OAuth 2.0
 │   │   └── LangGraphContext.tsx   # Estado del chat, transmisión SSE de LangGraph y datos estructurados
 │   ├── services/             # Servicios de integración
 │   │   └── api.ts                 # Cliente HTTP y transmisión SSE (/threads, /runs/stream, multipart binary streams)
@@ -50,7 +50,7 @@ web-planifica/
 │   ├── App.tsx               # Contenedor principal del Workspace y adjunción directa de archivos en el chat
 │   └── main.tsx              # Punto de entrada de la aplicación React
 ├── index.html                # Plantilla HTML principal con carga de tipografías (Outfit & Inter) y favicon
-├── package.json              # Dependencias (docx, lucide-react, react-markdown, js-cookie, etc.)
+├── package.json              # Dependencias (docx, lucide-react, react-markdown, etc.)
 ├── tsconfig.json             # Configuración del compilador TypeScript
 └── vite.config.ts            # Configuración del empaquetador Vite
 ```
@@ -91,8 +91,8 @@ npm run build
   - Validación de formato exclusivo **PDF** y tamaño máximo permitidos de **10 MB**.
   - Transmisión en memoria mediante stream binario de bytes (`multipart/form-data`).
 
-- **Autenticación Segura y Persistencia**:
-  - Integración con Google OAuth 2.0 y gestión de sesión almacenada en cookies con caducidad de 1 día y limpieza en cierre de sesión.
+- **Autenticación Segura y Persistencia en Sesión**:
+  - Integración con Google OAuth 2.0 y almacenamiento del token e información de usuario en `sessionStorage`.
 
 - **Grafo Multiagente Transmisión SSE**:
   - Conexión en tiempo real mediante Server-Sent Events con el Grafo Supervisor de LangGraph y parseo dinámico de datos estructurados.
