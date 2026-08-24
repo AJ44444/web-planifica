@@ -66,6 +66,8 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     checkHealth();
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   // Upon authentication, load existing threads without automatically selecting or loading the last conversation
