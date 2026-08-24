@@ -156,9 +156,9 @@ export const Navbar: React.FC = () => {
         }
 
         .server-status.offline {
-          background-color: #eff6ff;
-          color: #1d4ed8;
-          border: 1px solid #bfdbfe;
+          background-color: #fef2f2;
+          color: #dc2626;
+          border: 1px solid #fecaca;
         }
 
         .thread-selector-container {
