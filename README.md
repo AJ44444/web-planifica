@@ -41,7 +41,7 @@ web-planifica/
 │   │   ├── AuthContext.tsx        # Gestión de sesión y token con sessionStorage y Google OAuth 2.0
 │   │   └── LangGraphContext.tsx   # Estado del chat, transmisión SSE de LangGraph y datos estructurados
 │   ├── services/             # Servicios de integración
-│   │   └── api.ts                 # Cliente HTTP y transmisión SSE (/threads, /runs/stream, multipart binary streams)
+│   │   └── api.ts                 # Cliente HTTP y transmisión SSE (/threads, /runs/stream, payloads JSON Base64)
 │   ├── types/                # Definición de tipos e interfaces de TypeScript
 │   │   └── index.ts               # Modelos para Planes, Rúbricas, Recursos, Hilos y Usuarios
 │   ├── utils/                # Funciones utilitarias
@@ -86,10 +86,10 @@ npm run build
   - Generación de documento horizontal (Landscape) en tamaño Carta con matriz curricular de 4 columnas, encabezados oficiales, tablas de evaluación y tabla de recursos con anchos equilibrados y salto de línea automático en URLs.
   - Nombre dinámico del archivo descargado: `planificacion_[nombre_del_curso].docx`.
 
-- **Carga Directa de Documentos CNB (Stream de Bytes Binarios)**:
+- **Carga Directa de Documentos CNB (Codificación Base64 en JSON)**:
   - Adjunción de archivos PDF del CNB directamente en la caja de texto del chat mediante el botón de clip 📎.
   - Validación de formato exclusivo **PDF** y tamaño máximo permitidos de **10 MB**.
-  - Transmisión en memoria mediante stream binario de bytes (`multipart/form-data`).
+  - Transmisión en memoria convirtiendo el archivo PDF a Data URI Base64 (`data:application/pdf;base64,...`) dentro del mensaje JSON (`application/json`).
 
 - **Autenticación Segura y Persistencia en Sesión**:
   - Integración con Google OAuth 2.0 y almacenamiento del token e información de usuario en `sessionStorage`.
