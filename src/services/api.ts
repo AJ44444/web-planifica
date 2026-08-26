@@ -90,21 +90,14 @@ export async function logoutFromServer(): Promise<boolean> {
 }
 
 /**
- * Validates server health on /ok and /threads/search
+ * Validates server health on /ok route
  */
 export async function checkServerHealth(): Promise<boolean> {
   try {
     const okResponse = await fetchWithAutoRefresh(`${API_BASE_URL}/ok`, {
       method: 'GET',
     });
-    if (!okResponse.ok) return false;
-
-    // Validate threads/search route as required by server communication rules
-    const threadsResponse = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/search`, {
-      method: 'POST',
-      body: JSON.stringify({ limit: 1, metadata: {} }),
-    });
-    return threadsResponse.ok;
+    return okResponse.ok;
   } catch {
     return false;
   }
