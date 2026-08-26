@@ -19,7 +19,7 @@ export async function fetchWithAutoRefresh(url: string, options: RequestInit = {
 
   let response = await fetch(url, reqOptions);
 
-  if (response.status === 401) {
+  if (response.status === 401 && !url.includes('/auth/')) {
     try {
       const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
@@ -94,7 +94,7 @@ export async function logoutFromServer(): Promise<boolean> {
  */
 export async function checkServerHealth(): Promise<boolean> {
   try {
-    const okResponse = await fetchWithAutoRefresh(`${API_BASE_URL}/ok`, {
+    const okResponse = await fetch(`${API_BASE_URL}/ok`, {
       method: 'GET',
     });
     return okResponse.ok;

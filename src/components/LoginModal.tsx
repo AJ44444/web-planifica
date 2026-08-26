@@ -13,7 +13,7 @@ const GoogleAuthButton = React.memo<{
       onSuccess={onSuccess}
       onError={onError}
       useOneTap
-      ux_mode="redirect"
+      ux_mode="popup"
       shape="pill"
       theme="outline"
       text="continue_with"
