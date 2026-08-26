@@ -2,19 +2,43 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { ShieldCheck, Cpu, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
+import { ErrorModal } from './ErrorModal';
+
+const GoogleAuthButton = React.memo<{
+  onSuccess: (credentialResponse: CredentialResponse) => void;
+  onError: () => void;
+}>(({ onSuccess, onError }) => {
+  return (
+    <GoogleLogin
+      onSuccess={onSuccess}
+      onError={onError}
+      useOneTap
+      ux_mode="redirect"
+      shape="pill"
+      theme="outline"
+      text="continue_with"
+    />
+  );
+});
 
 export const LoginModal: React.FC = () => {
   const { loginWithToken } = useAuth();
+  const [authError, setAuthError] = React.useState<string | null>(null);
 
-  const handleGoogleSuccess = (credentialResponse: CredentialResponse) => {
+  const handleGoogleSuccess = React.useCallback(async (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
-      loginWithToken(credentialResponse.credential);
+      try {
+        setAuthError(null);
+        await loginWithToken(credentialResponse.credential);
+      } catch {
+        setAuthError('Falló la conexión con el servidor. No fue posible completar la autenticación.');
+      }
     }
-  };
+  }, [loginWithToken]);
 
-  const handleGoogleError = () => {
-    console.error('Google OAuth Authentication failed');
-  };
+  const handleGoogleError = React.useCallback(() => {
+    setAuthError('Ocurrió un inconveniente al conectar con el servicio de autenticación de Google.');
+  }, []);
 
   return (
     <div className="login-backdrop">
@@ -141,12 +165,9 @@ export const LoginModal: React.FC = () => {
 
             <div className="auth-body">
               <div className="google-auth-box">
-                <GoogleLogin
+                <GoogleAuthButton
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
-                  shape="pill"
-                  theme="outline"
-                  text="continue_with"
                 />
               </div>
 
@@ -541,6 +562,11 @@ export const LoginModal: React.FC = () => {
           }
         }
       `}</style>
+      <ErrorModal
+        isOpen={!!authError}
+        message={authError || ''}
+        onClose={() => setAuthError(null)}
+      />
     </div>
   );
 };

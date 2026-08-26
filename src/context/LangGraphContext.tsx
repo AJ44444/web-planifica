@@ -114,47 +114,59 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const selectThread = async (threadId: string) => {
-    setCurrentThreadId(threadId);
-    const history = await getThreadHistory(threadId);
-    const cleanHistory = history.filter((msg) => msg.role === 'user' || (msg.content && msg.content.trim()));
+    try {
+      setCurrentThreadId(threadId);
+      const history = await getThreadHistory(threadId);
+      const cleanHistory = history.filter((msg) => msg.role === 'user' || (msg.content && msg.content.trim()));
 
-    // Check history messages for full plan response format
-    let foundPlan = false;
-    const processedHistory = cleanHistory.map((msg) => {
-      if (msg.role === 'assistant' && msg.content) {
-        const isFull = isFullPlanResponse(msg.content);
-        if (isFull) {
-          if (!foundPlan) {
-            const parsed = parseAgentResponse(msg.content);
-            setCurrentPlanData(parsed.plan || null);
-            setCurrentRubricData(parsed.rubric || null);
-            setCurrentMultimodalData(parsed.multimodal || null);
-            foundPlan = true;
+      // Check history messages for full plan response format
+      let foundPlan = false;
+      const processedHistory = cleanHistory.map((msg) => {
+        if (msg.role === 'assistant' && msg.content) {
+          const isFull = isFullPlanResponse(msg.content);
+          if (isFull) {
+            if (!foundPlan) {
+              const parsed = parseAgentResponse(msg.content);
+              setCurrentPlanData(parsed.plan || null);
+              setCurrentRubricData(parsed.rubric || null);
+              setCurrentMultimodalData(parsed.multimodal || null);
+              foundPlan = true;
+            }
+            return { ...msg, isFullPlanResponse: true };
           }
-          return { ...msg, isFullPlanResponse: true };
         }
-      }
-      return msg;
-    });
+        return msg;
+      });
 
-    if (!foundPlan) {
-      setCurrentPlanData(null);
-      setCurrentRubricData(null);
-      setCurrentMultimodalData(null);
+      if (!foundPlan) {
+        setCurrentPlanData(null);
+        setCurrentRubricData(null);
+        setCurrentMultimodalData(null);
+      }
+      setMessages(processedHistory);
+    } catch {
+      showErrorNotification('Falló la conexión con el servidor. No fue posible cargar la conversación.');
     }
-    setMessages(processedHistory);
   };
 
   const deleteThreadById = async (threadId: string) => {
-    await deleteThread(threadId);
-    const remaining = threads.filter((t) => t.id !== threadId);
-    setThreads(remaining);
-    if (currentThreadId === threadId) {
-      if (remaining.length > 0) {
-        await selectThread(remaining[0].id);
-      } else {
-        resetChatToHero();
+    try {
+      const success = await deleteThread(threadId);
+      if (!success) {
+        showErrorNotification('Falló la conexión con el servidor. No fue posible eliminar la conversación.');
+        return;
       }
+      const remaining = threads.filter((t) => t.id !== threadId);
+      setThreads(remaining);
+      if (currentThreadId === threadId) {
+        if (remaining.length > 0) {
+          await selectThread(remaining[0].id);
+        } else {
+          resetChatToHero();
+        }
+      }
+    } catch {
+      showErrorNotification('Falló la conexión con el servidor. No fue posible eliminar la conversación.');
     }
   };
 
