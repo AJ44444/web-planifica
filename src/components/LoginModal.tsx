@@ -144,7 +144,6 @@ export const LoginModal: React.FC = () => {
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
-                  useOneTap
                   shape="pill"
                   theme="outline"
                   text="continue_with"

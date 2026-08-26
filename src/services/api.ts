@@ -3,12 +3,6 @@ import { parseAgentResponse } from '../utils/parser';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
-function getAuthHeaders(): HeadersInit {
-  return {
-    'Content-Type': 'application/json',
-  };
-}
-
 /**
  * Executes fetch with automatic HttpOnly Cookie transmission (credentials: 'include')
  * and handles HTTP 401 Unauthorized via /auth/refresh.
@@ -18,7 +12,7 @@ export async function fetchWithAutoRefresh(url: string, options: RequestInit = {
     ...options,
     credentials: 'include',
     headers: {
-      ...getAuthHeaders(),
+      'Content-Type': 'application/json',
       ...(options.headers || {}),
     },
   };
@@ -53,8 +47,7 @@ export async function fetchWithAutoRefresh(url: string, options: RequestInit = {
 export async function loginToServer(idToken: string): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
-    headers: getAuthHeaders(),
-    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id_token: idToken }),
   });
 
