@@ -38,7 +38,7 @@ web-planifica/
 │   │       ├── MultimodalView.tsx     # Galería interactiva de recursos multimodales (video, audio, etc.)
 │   │       └── ThreadHistoryView.tsx  # Historial estructurado y gestión de conversaciones
 │   ├── context/              # Proveedores de estado global (React Context)
-│   │   ├── AuthContext.tsx        # Gestión de sesión y token con sessionStorage y Google OAuth 2.0
+│   │   ├── AuthContext.tsx        # Gestión de sesión mediante HttpOnly Cookies del servidor y Google OAuth 2.0
 │   │   └── LangGraphContext.tsx   # Estado del chat, transmisión SSE de LangGraph y datos estructurados
 │   ├── services/             # Servicios de integración
 │   │   └── api.ts                 # Cliente HTTP y transmisión SSE (/threads, /runs/stream, payloads JSON Base64)
@@ -91,8 +91,8 @@ npm run build
   - Validación de formato exclusivo **PDF** y tamaño máximo permitidos de **10 MB**.
   - Transmisión en memoria convirtiendo el archivo PDF a Data URI Base64 (`data:application/pdf;base64,...`) dentro del mensaje JSON (`application/json`).
 
-- **Autenticación Segura y Persistencia en Sesión**:
-  - Integración con Google OAuth 2.0 y almacenamiento del token e información de usuario en `sessionStorage`.
+- **Autenticación Segura mediante HTTP Cookies**:
+  - Integración con Google OAuth 2.0 y administración de sesión mediante cookies HTTP seguras (`access_token` y `refresh_token`) gestionadas automáticamente por el navegador (`credentials: 'include'`).
 
 - **Grafo Multiagente Transmisión SSE**:
   - Conexión en tiempo real mediante Server-Sent Events con el Grafo Supervisor de LangGraph y parseo dinámico de datos estructurados.

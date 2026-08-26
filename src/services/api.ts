@@ -4,18 +4,91 @@ import { parseAgentResponse } from '../utils/parser';
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
 function getAuthHeaders(): HeadersInit {
-  const token = sessionStorage.getItem('google_id_token') || '';
   return {
     'Content-Type': 'application/json',
-    'Authorization': token ? `Bearer ${token}` : '',
   };
 }
 
-export async function checkServerHealth(): Promise<boolean> {
+/**
+ * Executes fetch with automatic HttpOnly Cookie transmission (credentials: 'include')
+ * and handles HTTP 401 Unauthorized via /auth/refresh.
+ */
+export async function fetchWithAutoRefresh(url: string, options: RequestInit = {}): Promise<Response> {
+  const reqOptions: RequestInit = {
+    ...options,
+    credentials: 'include',
+    headers: {
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    },
+  };
+
+  let response = await fetch(url, reqOptions);
+
+  if (response.status === 401) {
+    try {
+      const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (refreshRes.ok) {
+        // Retry original request with newly updated cookie
+        response = await fetch(url, reqOptions);
+      } else {
+        window.dispatchEvent(new Event('auth:unauthorized'));
+      }
+    } catch {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+    }
+  }
+
+  return response;
+}
+
+/**
+ * Authenticates teacher via Google ID Token (POST /auth/login)
+ * Sets HttpOnly cookies: access_token and refresh_token
+ */
+export async function loginToServer(idToken: string): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    credentials: 'include',
+    body: JSON.stringify({ id_token: idToken }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Fallo la autenticación con el servidor');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Renews access_token cookie using refresh_token cookie (POST /auth/refresh)
+ */
+export async function refreshServerSession(): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('Sesión expirada');
+  }
+
+  return await response.json();
+}
+
+/**
+ * Closes server session and clears HttpOnly cookies (POST /auth/logout)
+ */
+export async function logoutFromServer(): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/ok`, {
-      method: 'GET',
-      headers: getAuthHeaders()
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
     });
     return response.ok;
   } catch {
@@ -23,15 +96,37 @@ export async function checkServerHealth(): Promise<boolean> {
   }
 }
 
+/**
+ * Validates server health on /ok and /threads/search
+ */
+export async function checkServerHealth(): Promise<boolean> {
+  try {
+    const okResponse = await fetchWithAutoRefresh(`${API_BASE_URL}/ok`, {
+      method: 'GET',
+    });
+    if (!okResponse.ok) return false;
+
+    // Validate threads/search route as required by server communication rules
+    const threadsResponse = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/search`, {
+      method: 'POST',
+      body: JSON.stringify({ limit: 1, metadata: {} }),
+    });
+    return threadsResponse.ok;
+  } catch {
+    return false;
+  }
+}
+
 export async function createThread(): Promise<string> {
-  const response = await fetch(`${API_BASE_URL}/threads`, {
+  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads`, {
     method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({})
+    body: JSON.stringify({}),
   });
+
   if (!response.ok) {
     throw new Error('Fallo la conexión con el servidor');
   }
+
   const data = await response.json();
   const threadId = data.thread_id || data.id;
   if (!threadId) {
@@ -41,39 +136,34 @@ export async function createThread(): Promise<string> {
 }
 
 export async function getThreads(): Promise<Thread[]> {
-  try {
-    // Search threads according to como_consultar_threads.md (POST /threads/search)
-    const response = await fetch(`${API_BASE_URL}/threads/search`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ limit: 100, metadata: {} })
-    });
+  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/search`, {
+    method: 'POST',
+    body: JSON.stringify({ limit: 100, metadata: {} }),
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      const list = Array.isArray(data) ? data : (data.threads || []);
-      if (Array.isArray(list) && list.length > 0) {
-        return list.map((t: any, idx: number) => ({
-          id: t.thread_id || t.id || `thread_${idx}`,
-          title: t.title || t.metadata?.title || `Conversación ${list.length - idx}`,
-          createdAt: t.created_at
-            ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          messageCount: t.message_count || 0,
-        }));
-      }
-    }
-  } catch {
-    // Fallback gracefully without console logs
+  if (!response.ok) {
+    throw new Error('Servidor no disponible en /threads/search');
+  }
+
+  const data = await response.json();
+  const list = Array.isArray(data) ? data : (data.threads || []);
+  if (Array.isArray(list)) {
+    return list.map((t: any, idx: number) => ({
+      id: t.thread_id || t.id || `thread_${idx}`,
+      title: t.title || t.metadata?.title || `Conversación ${list.length - idx}`,
+      createdAt: t.created_at
+        ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      messageCount: t.message_count || 0,
+    }));
   }
   return [];
 }
 
 export async function deleteThread(threadId: string): Promise<boolean> {
   try {
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}`, {
+    const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/${threadId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
     return response.ok;
   } catch {
@@ -83,10 +173,8 @@ export async function deleteThread(threadId: string): Promise<boolean> {
 
 export async function getThreadHistory(threadId: string): Promise<ChatMessage[]> {
   try {
-    // Get thread history according to como_consultar_threads.md (GET /threads/{thread_id}/history)
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/history`, {
+    const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/${threadId}/history`, {
       method: 'GET',
-      headers: getAuthHeaders()
     });
     if (response.ok) {
       const data = await response.json();
@@ -127,15 +215,14 @@ export async function streamLangGraphRun(
   let fullContent = '';
 
   try {
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
+    const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({
         assistant_id: 'supervisor',
         input: {
           messages: [{ role: 'user', content: userMessageText }],
         },
-      })
+      }),
     });
 
     if (!response.ok || !response.body) {
@@ -165,7 +252,6 @@ export async function streamLangGraphRun(
           try {
             const parsed = JSON.parse(dataStr);
 
-            // Extract text chunk strictly from assistant / AI messages
             let textChunk = '';
             if (typeof parsed === 'string') {
               textChunk = parsed;
@@ -190,7 +276,6 @@ export async function streamLangGraphRun(
       }
     }
 
-    // Parse structured data from complete streamed output
     const structuredData = parseAgentResponse(fullContent);
 
     callbacks.onComplete({
@@ -200,9 +285,8 @@ export async function streamLangGraphRun(
       timestamp: new Date().toISOString(),
       structuredData,
     });
-  } catch (err: any) {
+  } catch {
     if (fullContent && fullContent.trim().length > 0) {
-      // Content was received from agent before connection closed; preserve and complete
       const structuredData = parseAgentResponse(fullContent);
       callbacks.onComplete({
         id: `msg_${Date.now()}`,
@@ -212,7 +296,6 @@ export async function streamLangGraphRun(
         structuredData,
       });
     } else {
-      // Real API failure with 0 content delivered
       callbacks.onError(new Error('Fallo la conexión con el servidor'));
     }
   }

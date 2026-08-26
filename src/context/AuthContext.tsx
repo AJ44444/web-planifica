@@ -1,15 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../types';
-
-const TOKEN_STORAGE_KEY = 'google_id_token';
+import { loginToServer, refreshServerSession, logoutFromServer } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  loginWithToken: (idToken: string, userPayload?: Partial<User>) => void;
-  logout: () => void;
+  loginWithToken: (idToken: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,54 +27,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Initialize session on mount by checking active HttpOnly Cookie via /auth/refresh
   useEffect(() => {
-    // Read session strictly from sessionStorage as per requirements
-    const savedToken = sessionStorage.getItem(TOKEN_STORAGE_KEY);
-    if (savedToken) {
-      setToken(savedToken);
-      const decoded = parseJwt(savedToken);
-      if (decoded && decoded.sub) {
-        setUser({
-          google_id: decoded.sub,
-          name: decoded.name || decoded.email || 'Usuario',
-          email: decoded.email || '',
-          picture: decoded.picture,
-        });
-      } else {
-        const storedUser = sessionStorage.getItem('user_profile_cache');
-        if (storedUser) {
-          try {
-            setUser(JSON.parse(storedUser));
-          } catch {
-            setUser(null);
-          }
+    const initAuthSession = async () => {
+      try {
+        const data = await refreshServerSession();
+        if (data && data.user) {
+          const userObj = data.user;
+          const fullName = [userObj.nombres, userObj.apellidos].filter(Boolean).join(' ') || userObj.email || 'Docente';
+          setUser({
+            google_id: userObj._id || userObj.id_usuario || '',
+            name: fullName,
+            email: userObj.email || '',
+            picture: userObj.picture,
+          });
+          setToken(data.access_token || 'cookie_authenticated');
         }
+      } catch {
+        setUser(null);
+        setToken(null);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const loginWithToken = (idToken: string, userPayload?: Partial<User>) => {
-    sessionStorage.setItem(TOKEN_STORAGE_KEY, idToken);
-    setToken(idToken);
-
-    const decoded = parseJwt(idToken);
-    const userInfo: User = {
-      google_id: userPayload?.google_id || decoded?.sub || '',
-      name: userPayload?.name || decoded?.name || decoded?.email || 'Usuario',
-      email: userPayload?.email || decoded?.email || '',
-      picture: userPayload?.picture || decoded?.picture,
     };
 
-    setUser(userInfo);
-    sessionStorage.setItem('user_profile_cache', JSON.stringify(userInfo));
+    initAuthSession();
+
+    const handleUnauthorized = () => {
+      setUser(null);
+      setToken(null);
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, []);
+
+  const loginWithToken = async (idToken: string) => {
+    try {
+      setIsLoading(true);
+      const data = await loginToServer(idToken);
+      const decoded = parseJwt(idToken);
+
+      const serverUser = data?.user || {};
+      const fullName = [serverUser.nombres, serverUser.apellidos].filter(Boolean).join(' ') ||
+                       decoded?.name ||
+                       decoded?.email ||
+                       'Docente';
+
+      const userInfo: User = {
+        google_id: serverUser._id || serverUser.id_usuario || decoded?.sub || '',
+        name: fullName,
+        email: serverUser.email || decoded?.email || '',
+        picture: serverUser.picture || decoded?.picture,
+      };
+
+      setUser(userInfo);
+      setToken(data?.access_token || idToken);
+    } catch {
+      setUser(null);
+      setToken(null);
+      throw new Error('No fue posible autenticar con el servidor.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const logout = () => {
-    sessionStorage.removeItem(TOKEN_STORAGE_KEY);
-    sessionStorage.removeItem('user_profile_cache');
-    setToken(null);
+  const logout = async () => {
+    await logoutFromServer();
     setUser(null);
+    setToken(null);
   };
 
   return (
@@ -83,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         token,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!user,
         isLoading,
         loginWithToken,
         logout,
