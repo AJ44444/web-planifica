@@ -170,13 +170,29 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
       for (const item of checkpoints) {
         if (item.values && item.values.messages) {
           for (const msg of item.values.messages) {
-            const role = msg.type === 'human' || msg.role === 'user' ? 'user' : 'assistant';
-            loadedMsgs.push({
-              id: msg.id || `msg_${Date.now()}_${Math.random()}`,
-              role,
-              content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
-              timestamp: msg.timestamp || new Date().toISOString(),
-            });
+            const isHuman = msg.type === 'human' || msg.role === 'user';
+            const isTool = msg.type === 'tool' || msg.role === 'tool';
+            const hasToolCalls = Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0;
+
+            // Render HumanMessages and final supervisor AIMessages without tool_calls only
+            if (isHuman) {
+              loadedMsgs.push({
+                id: msg.id || `msg_${Date.now()}_${Math.random()}`,
+                role: 'user',
+                content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+                timestamp: msg.timestamp || new Date().toISOString(),
+              });
+            } else if (!isTool && !hasToolCalls && msg.content) {
+              const textContent = typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content);
+              if (textContent.trim()) {
+                loadedMsgs.push({
+                  id: msg.id || `msg_${Date.now()}_${Math.random()}`,
+                  role: 'assistant',
+                  content: textContent,
+                  timestamp: msg.timestamp || new Date().toISOString(),
+                });
+              }
+            }
           }
         }
       }
@@ -239,21 +255,28 @@ export async function streamLangGraphRun(
           try {
             const parsed = JSON.parse(dataStr);
 
-            let textChunk = '';
-            if (typeof parsed === 'string') {
-              textChunk = parsed;
-            } else if (parsed.content && parsed.role !== 'user' && parsed.type !== 'human') {
-              textChunk = typeof parsed.content === 'string' ? parsed.content : JSON.stringify(parsed.content);
-            } else if (parsed.messages && Array.isArray(parsed.messages)) {
-              const lastMsg = parsed.messages[parsed.messages.length - 1];
-              if (lastMsg && lastMsg.content && lastMsg.role !== 'user' && lastMsg.type !== 'human') {
-                textChunk = lastMsg.content;
-              }
+            // Filter for supervisor state updates or direct message objects (AIMessage without tool_calls)
+            const supervisorState = parsed.supervisor_planifica || parsed.main_agent || parsed;
+            let targetMsg = null;
+
+            if (supervisorState && supervisorState.messages && Array.isArray(supervisorState.messages)) {
+              targetMsg = supervisorState.messages[supervisorState.messages.length - 1];
+            } else if (parsed.content || parsed.text) {
+              targetMsg = parsed;
             }
 
-            if (textChunk) {
-              fullContent += textChunk;
-              callbacks.onToken(textChunk);
+            if (targetMsg) {
+              const isTool = targetMsg.type === 'tool' || targetMsg.role === 'tool';
+              const hasToolCalls = Array.isArray(targetMsg.tool_calls) && targetMsg.tool_calls.length > 0;
+              const isUser = targetMsg.type === 'human' || targetMsg.role === 'user';
+
+              if (!isUser && !isTool && !hasToolCalls && targetMsg.content) {
+                const textChunk = typeof targetMsg.content === 'string' ? targetMsg.content : JSON.stringify(targetMsg.content);
+                if (textChunk) {
+                  fullContent += textChunk;
+                  callbacks.onToken(textChunk);
+                }
+              }
             }
           } catch {
             fullContent += dataStr;
