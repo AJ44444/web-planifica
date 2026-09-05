@@ -45,7 +45,7 @@ web-planifica/
 │   ├── types/                # Definición de tipos e interfaces de TypeScript
 │   │   └── index.ts               # Modelos para Planes, Rúbricas, Recursos, Hilos y Usuarios
 │   ├── utils/                # Funciones utilitarias
-│   │   ├── parser.ts              # Validador y parser JSON de respuestas estructuradas
+│   │   ├── dateFormatter.ts       # Formateador de fechas y horas en zona horaria GMT-6
 │   │   └── wordExporter.ts        # Módulo de exportación formal a Microsoft Word (.docx)
 │   ├── App.tsx               # Contenedor principal del Workspace y adjunción directa de archivos en el chat
 │   └── main.tsx              # Punto de entrada de la aplicación React

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LangGraphProvider, useLangGraph } from './context/LangGraphContext';
+import { LangGraphProvider, useLangGraph, type ViewTabType } from './context/LangGraphContext';
 
 import { Navbar } from './components/Navbar';
 import { AgentStatusPanel } from './components/AgentStatusPanel';
@@ -10,9 +10,12 @@ import { LessonPlanView } from './components/Visualizers/LessonPlanView';
 import { RubricView } from './components/Visualizers/RubricView';
 import { MultimodalView } from './components/Visualizers/MultimodalView';
 import { ThreadHistoryView } from './components/Visualizers/ThreadHistoryView';
+import { PlanificationsListView } from './components/Visualizers/PlanificationsListView';
 import { LoginModal } from './components/LoginModal';
 
-import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History, Paperclip, FileText, X } from 'lucide-react';
+import { getLessonPlanDetail } from './services/api';
+import type { LessonPlanDetailResponse } from './types';
+import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History, Paperclip, FileText, X, Layers } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -24,19 +27,29 @@ const MainWorkspaceContent: React.FC = () => {
     isStreaming, 
     activeViewTab, 
     setActiveViewTab,
-    currentPlanData,
-    currentRubricData,
-    currentMultimodalData,
     resetChatToHero,
     currentThreadId,
     showErrorNotification,
   } = useLangGraph();
 
+  const [selectedPlanDetail, setSelectedPlanDetail] = useState<LessonPlanDetailResponse | null>(null);
   const [inputPrompt, setInputPrompt] = useState('');
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLoadVisualizers = async (planId: string): Promise<boolean> => {
+    try {
+      const detail = await getLessonPlanDetail(planId);
+      setSelectedPlanDetail(detail);
+      setActiveViewTab('plan');
+      return true;
+    } catch {
+      showErrorNotification('Ocurrió un error al poblar los visualizadores.');
+      return false;
+    }
+  };
 
   const scrollToBottom = () => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -59,7 +72,7 @@ const MainWorkspaceContent: React.FC = () => {
     return <LoginModal />;
   }
 
-  const handleTabSelect = (tab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history') => {
+  const handleTabSelect = (tab: ViewTabType) => {
     if (tab === 'chat' && activeViewTab === 'chat' && (messages.length > 0 || currentThreadId !== null)) {
       resetChatToHero();
     } else {
@@ -144,6 +157,12 @@ const MainWorkspaceContent: React.FC = () => {
               onClick={() => handleTabSelect('chat')}
             >
               <MessageSquare size={16} /> Chat
+            </button>
+            <button
+              className={`workspace-tab ${activeViewTab === 'planifications' ? 'active' : ''}`}
+              onClick={() => handleTabSelect('planifications')}
+            >
+              <Layers size={16} /> Planificaciones
             </button>
             <button
               className={`workspace-tab ${activeViewTab === 'plan' ? 'active' : ''}`}
@@ -274,15 +293,16 @@ const MainWorkspaceContent: React.FC = () => {
               </div>
             )}
 
+            {activeViewTab === 'planifications' && <PlanificationsListView onLoadVisualizers={handleLoadVisualizers} />}
             {activeViewTab === 'plan' && (
-              <LessonPlanView
-                data={currentPlanData}
-                rubricData={currentRubricData}
-                multimodalData={currentMultimodalData}
-              />
+              <LessonPlanView plan={selectedPlanDetail?.planificacion} />
             )}
-            {activeViewTab === 'rubric' && <RubricView data={currentRubricData} />}
-            {activeViewTab === 'multimodal' && <MultimodalView data={currentMultimodalData} />}
+            {activeViewTab === 'rubric' && (
+              <RubricView rubrics={selectedPlanDetail?.instrumentos_evaluacion} />
+            )}
+            {activeViewTab === 'multimodal' && (
+              <MultimodalView multimodals={selectedPlanDetail?.recursos_multimodales} />
+            )}
             {activeViewTab === 'history' && <ThreadHistoryView />}
           </div>
         </main>

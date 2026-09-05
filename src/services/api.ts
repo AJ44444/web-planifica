@@ -1,12 +1,8 @@
 import type { ChatMessage, Thread } from '../types';
-import { parseAgentResponse } from '../utils/parser';
+import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
-/**
- * Executes fetch with automatic HttpOnly Cookie transmission (credentials: 'include')
- * and handles HTTP 401 Unauthorized via /auth/refresh.
- */
 export async function fetchWithAutoRefresh(url: string, options: RequestInit = {}): Promise<Response> {
   const reqOptions: RequestInit = {
     ...options,
@@ -27,7 +23,6 @@ export async function fetchWithAutoRefresh(url: string, options: RequestInit = {
       });
 
       if (refreshRes.ok) {
-        // Retry original request with newly updated cookie
         response = await fetch(url, reqOptions);
       } else {
         window.dispatchEvent(new Event('auth:unauthorized'));
@@ -40,10 +35,6 @@ export async function fetchWithAutoRefresh(url: string, options: RequestInit = {
   return response;
 }
 
-/**
- * Authenticates teacher via Google ID Token (POST /auth/login)
- * Sets HttpOnly cookies: access_token and refresh_token
- */
 export async function loginToServer(idToken: string): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -59,9 +50,6 @@ export async function loginToServer(idToken: string): Promise<any> {
   return await response.json();
 }
 
-/**
- * Renews access_token cookie using refresh_token cookie (POST /auth/refresh)
- */
 export async function refreshServerSession(): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
@@ -75,9 +63,6 @@ export async function refreshServerSession(): Promise<any> {
   return await response.json();
 }
 
-/**
- * Closes server session and clears HttpOnly cookies (POST /auth/logout)
- */
 export async function logoutFromServer(): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -90,9 +75,6 @@ export async function logoutFromServer(): Promise<boolean> {
   }
 }
 
-/**
- * Validates server health on /ok route
- */
 export async function checkServerHealth(): Promise<boolean> {
   try {
     const okResponse = await fetch(`${API_BASE_URL}/ok`, {
@@ -138,9 +120,7 @@ export async function getThreads(): Promise<Thread[]> {
     return list.map((t: any, idx: number) => ({
       id: t.thread_id || t.id || `thread_${idx}`,
       title: t.title || t.metadata?.title || `Conversación ${list.length - idx}`,
-      createdAt: t.created_at
-        ? new Date(t.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      createdAt: formatGMT6Time(t.created_at || Date.now()),
       messageCount: t.message_count || 0,
     }));
   }
@@ -174,7 +154,6 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
             const isTool = msg.type === 'tool' || msg.role === 'tool';
             const hasToolCalls = Array.isArray(msg.tool_calls) && msg.tool_calls.length > 0;
 
-            // Render HumanMessages and final supervisor AIMessages without tool_calls only
             if (isHuman) {
               loadedMsgs.push({
                 id: msg.id || `msg_${Date.now()}_${Math.random()}`,
@@ -286,27 +265,46 @@ export async function streamLangGraphRun(
       }
     }
 
-    const structuredData = parseAgentResponse(fullContent);
-
     callbacks.onComplete({
       id: `msg_${Date.now()}`,
       role: 'assistant',
       content: fullContent,
       timestamp: new Date().toISOString(),
-      structuredData,
     });
   } catch {
     if (fullContent && fullContent.trim().length > 0) {
-      const structuredData = parseAgentResponse(fullContent);
       callbacks.onComplete({
         id: `msg_${Date.now()}`,
         role: 'assistant',
         content: fullContent,
         timestamp: new Date().toISOString(),
-        structuredData,
       });
     } else {
       callbacks.onError(new Error('Fallo la conexión con el servidor'));
     }
   }
+}
+
+export async function getLessonPlans(page: number = 1, limit: number = 10): Promise<any> {
+  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/api/lesson-plans?page=${page}&limit=${limit}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error('No fue posible obtener el listado de planificaciones');
+  }
+
+  return await response.json();
+}
+
+export async function getLessonPlanDetail(id: string): Promise<any> {
+  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/api/lesson-plans/${id}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error('No fue posible obtener los detalles de la planificación');
+  }
+
+  return await response.json();
 }

@@ -5,12 +5,14 @@ import {
   Video, 
   MessageSquare,
   Compass,
-  History
+  History,
+  Layers
 } from 'lucide-react';
+import type { ViewTabType } from '../context/LangGraphContext';
 
 interface AgentStatusPanelProps {
-  activeTab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history';
-  onSelectTab: (tab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history') => void;
+  activeTab: ViewTabType;
+  onSelectTab: (tab: ViewTabType) => void;
 }
 
 export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, onSelectTab }) => {
@@ -29,6 +31,13 @@ export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, o
           >
             <MessageSquare size={16} />
             <span>Chat</span>
+          </button>
+          <button
+            className={`nav-item ${activeTab === 'planifications' ? 'active' : ''}`}
+            onClick={() => onSelectTab('planifications')}
+          >
+            <Layers size={16} />
+            <span>Planificaciones</span>
           </button>
           <button
             className={`nav-item ${activeTab === 'plan' ? 'active' : ''}`}

@@ -6,29 +6,36 @@ export interface User {
   role?: string;
 }
 
-// ----------------------------------------------------
-// 1. PLANIFICADOR DE CLASES
-// ----------------------------------------------------
-export interface EncabezadoPlan {
-  centro_educativo: string;
-  lugar: string;
-  nombre_docente: string;
+export interface MetadatosPlan {
   carrera?: string;
-  curso?: string;
-  grado: string;
-  seccion: string;
-  duracion: string;
+  subarea_curricular?: string;
+  fecha_creacion?: number | string;
+  estado?: string;
+  id_usuario?: string;
 }
 
-export interface IndicadorPlanItem {
-  indicador: string;
-  contenidos: string[];
+export interface EncabezadoPlan {
+  centro_educativo?: string;
+  lugar?: string;
+  nombre_docente?: string;
+  carrera?: string;
+  curso?: string;
+  grado?: string;
+  seccion?: string;
+  duracion?: string;
+  cantidad_periodos?: number;
+  duracion_periodos?: number;
 }
 
 export interface ActividadAprendizaje {
   id_actividad: number;
   fase: 'inicio' | 'desarrollo' | 'cierre';
   descripcion: string;
+}
+
+export interface IndicadorPlanItem {
+  indicador: string;
+  contenidos: string[];
 }
 
 export interface FilaCurricularPlan {
@@ -40,13 +47,13 @@ export interface FilaCurricularPlan {
 }
 
 export interface PlanificacionClase {
+  _id?: string;
+  id_usuario?: string;
+  metadatos?: MetadatosPlan;
   encabezado: EncabezadoPlan;
-  desarrollo_curricular: FilaCurricularPlan[];
+  desarrollo_curricular?: FilaCurricularPlan[];
 }
 
-// ----------------------------------------------------
-// 3. SUBAGENTE 3: INSTRUMENTOS DE EVALUACIÓN
-// ----------------------------------------------------
 export interface CriterioEvaluacion {
   nombre: string;
   definiciones: string[];
@@ -74,9 +81,6 @@ export interface InstrumentoEvaluacion {
   herramientas?: EvaluacionToolItem[];
 }
 
-// ----------------------------------------------------
-// 4. SUBAGENTE 4: RECURSOS MULTIMODALES
-// ----------------------------------------------------
 export interface RecursoMultimodal {
   id_planificacion?: string;
   id_fila_curricular?: number;
@@ -89,21 +93,12 @@ export interface RecursoMultimodal {
   descripcion_uso?: string;
 }
 
-// ----------------------------------------------------
-// CHAT & CORE INTERFACES
-// ----------------------------------------------------
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
   agentName?: string;
-  isFullPlanResponse?: boolean;
-  structuredData?: {
-    plan?: PlanificacionClase;
-    rubric?: InstrumentoEvaluacion;
-    multimodal?: RecursoMultimodal[];
-  };
 }
 
 export interface Thread {
@@ -111,4 +106,20 @@ export interface Thread {
   title: string;
   createdAt: string;
   messageCount: number;
+}
+
+export interface LessonPlansResponse {
+  status: string;
+  total_registros: number;
+  total_paginas: number;
+  pagina_actual: number;
+  registros_por_pagina: number;
+  planificaciones: PlanificacionClase[];
+}
+
+export interface LessonPlanDetailResponse {
+  status: string;
+  planificacion?: PlanificacionClase;
+  instrumentos_evaluacion?: InstrumentoEvaluacion[];
+  recursos_multimodales?: RecursoMultimodal[];
 }

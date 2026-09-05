@@ -1,27 +1,26 @@
 import React from 'react';
-import type { InstrumentoEvaluacion } from '../../types';
 import { ClipboardCheck, Award } from 'lucide-react';
-
-interface RubricViewProps {
-  data?: InstrumentoEvaluacion | null;
-}
+import type { InstrumentoEvaluacion, CriterioEvaluacion } from '../../types';
 
 // Helper function to strip score points from scale labels e.g. "Excelente (4 pts)" -> "Excelente"
 const cleanScaleLabel = (label: string): string => {
   return label.replace(/\s*\(\d+\s*(?:pts|puntos)?\)/gi, '').trim();
 };
 
-export const RubricView: React.FC<RubricViewProps> = ({ data }) => {
-  const tools = data?.herramientas && data.herramientas.length > 0 
-    ? data.herramientas 
-    : (data?.instrumento_generado?.criterios ? [{
-        tipo: data.tipo,
-        titulo: data.titulo,
-        escala: data.instrumento_generado.escala,
-        criterios: data.instrumento_generado.criterios
-      }] : []);
+export interface RubricViewProps {
+  rubrics?: InstrumentoEvaluacion[] | null;
+}
 
-  if (!data || tools.length === 0) {
+export const RubricView: React.FC<RubricViewProps> = ({ rubrics }) => {
+  const rawTools = rubrics || [];
+  const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
+    tipo: t.tipo || 'rubrica',
+    titulo: t.titulo || 'Instrumento de Evaluación',
+    escala: t.instrumento_generado?.escala || [],
+    criterios: t.instrumento_generado?.criterios || [],
+  }));
+
+  if (tools.length === 0) {
     return (
       <div className="empty-visualizer-container">
         <div className="empty-visualizer-content">
@@ -29,10 +28,10 @@ export const RubricView: React.FC<RubricViewProps> = ({ data }) => {
             <ClipboardCheck size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No has solicitado ver una planificación completa en el chat
+            No hay herramientas de evaluación cargadas
           </h2>
           <p className="empty-visualizer-subtitle">
-            Solicítala en el chat para ver el detalle estructurado de las herramientas de evaluación, rúbricas analíticas y listas de cotejo.
+            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores" para explorar las rúbricas analíticas y listas de cotejo.
           </p>
         </div>
 
@@ -106,7 +105,7 @@ export const RubricView: React.FC<RubricViewProps> = ({ data }) => {
         </div>
       </div>
 
-      {tools.map((tool, tIdx) => {
+      {tools.map((tool: any, tIdx: number) => {
         const isRubrica = tool.tipo === 'rubrica';
         const cleanedEscala = (tool.escala || []).map(cleanScaleLabel);
 
@@ -128,7 +127,7 @@ export const RubricView: React.FC<RubricViewProps> = ({ data }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {(tool.criterios || []).map((crit: any, cIdx: number) => {
+                  {(tool.criterios || []).map((crit: CriterioEvaluacion, cIdx: number) => {
                     const critName = crit.nombre;
                     const defs = crit.definiciones;
 

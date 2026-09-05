@@ -5,20 +5,10 @@ import type { ChatMessage as ChatMessageType } from '../types';
 import { Bot, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-import { isFullPlanResponse } from '../utils/parser';
-
 interface ChatMessageProps {
   message: ChatMessageType;
   isStreaming?: boolean;
 }
-
-const PREDETERMINED_PLAN_NOTIFICATION = `¡Excelente! La planificación didáctica completa ha sido generada y renderizada con éxito.
-
-Sus elementos ya se encuentran disponibles para su consulta en los visualizadores del espacio de trabajo:
-
-- 📖 **Visualizador de Plan**: Encabezado administrativo, competencias, indicadores de logro, contenidos y secuencia didáctica por fases (*Inicio, Desarrollo y Cierre*).
-- 📋 **Rúbricas & Cotejo**: Rúbrica analítica y lista de cotejo para evaluar las actividades.
-- 🎬 **Recursos Multimodales**: Galería interactiva con videos, imágenes, audios y documentos sugeridos.`;
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
   const { user } = useAuth();
@@ -26,8 +16,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
 
   const isUser = message.role === 'user';
   const userPhoto = user?.picture;
-  const showFullPlanMessage = !isUser && (message.isFullPlanResponse || isFullPlanResponse(message.content));
-  let displayContent = showFullPlanMessage ? PREDETERMINED_PLAN_NOTIFICATION : message.content;
+  let displayContent = message.content;
 
   if (displayContent && displayContent.includes('data:application/pdf;base64,')) {
     displayContent = displayContent.replace(/data:application\/pdf;base64,[A-Za-z0-9+/=]+/g, '📄 *(Documento PDF del CNB adjunto)*');

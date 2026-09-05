@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import type { PlanificacionClase, InstrumentoEvaluacion, RecursoMultimodal } from '../../types';
 import { exportToWord } from '../../utils/wordExporter';
 import { useLangGraph } from '../../context/LangGraphContext';
 import { 
@@ -16,18 +15,17 @@ import {
   FileDown
 } from 'lucide-react';
 
-interface LessonPlanViewProps {
-  data?: PlanificacionClase | null;
-  rubricData?: InstrumentoEvaluacion | null;
-  multimodalData?: RecursoMultimodal[] | null;
+import type { PlanificacionClase, FilaCurricularPlan } from '../../types';
+
+export interface LessonPlanViewProps {
+  plan?: PlanificacionClase | null;
 }
 
-export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ 
-  data,
-  rubricData,
-  multimodalData
-}) => {
+export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
   const { showErrorNotification } = useLangGraph();
+
+  const data = plan || null;
+
   // Selected tree node path state for interactive branch highlight
   const [selectedNode, setSelectedNode] = useState<{
     filaId: number;
@@ -43,10 +41,10 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
             <BookOpen size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No has solicitado ver una planificación completa en el chat
+            No hay ninguna planificación cargada en los visualizadores
           </h2>
           <p className="empty-visualizer-subtitle">
-            Solicítala en el chat para ver el detalle estructurado de la secuencia didáctica.
+            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores" en una planificación para explorar su detalle.
           </p>
         </div>
 
@@ -134,7 +132,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
 
         <button
           className="btn-export-word"
-          onClick={() => exportToWord(data, rubricData, multimodalData, showErrorNotification)}
+          onClick={() => exportToWord(data, null, null, showErrorNotification)}
           title="Exportar planificación a Microsoft Word (.docx)"
         >
           <FileDown size={16} /> Exportar
@@ -181,7 +179,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({
       </div>
 
       {/* Development Curriculum Blocks (Independent block for each row) */}
-      {(desarrollo_curricular || []).map((fila, filaIdx) => {
+      {(desarrollo_curricular || []).map((fila: FilaCurricularPlan, filaIdx: number) => {
         const filaId = fila.id_fila || (filaIdx + 1);
         const isFilaActive = selectedNode?.filaId === filaId;
         const indicadores = fila.indicadores_logro || (fila as any).indicadores_logro_y_contenidos || [];

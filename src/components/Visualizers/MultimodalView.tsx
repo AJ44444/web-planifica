@@ -1,13 +1,15 @@
 import React from 'react';
-import type { RecursoMultimodal } from '../../types';
 import { Video, ExternalLink, MonitorPlay, Headphones, Layers, FileText, Globe } from 'lucide-react';
+import type { RecursoMultimodal } from '../../types';
 
-interface MultimodalViewProps {
-  data?: RecursoMultimodal[] | null;
+export interface MultimodalViewProps {
+  multimodals?: RecursoMultimodal[] | null;
 }
 
-export const MultimodalView: React.FC<MultimodalViewProps> = ({ data }) => {
-  if (!data || data.length === 0) {
+export const MultimodalView: React.FC<MultimodalViewProps> = ({ multimodals }) => {
+  const data = multimodals || [];
+
+  if (data.length === 0) {
     return (
       <div className="empty-visualizer-container">
         <div className="empty-visualizer-content">
@@ -15,10 +17,10 @@ export const MultimodalView: React.FC<MultimodalViewProps> = ({ data }) => {
             <Video size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No has solicitado ver una planificación completa en el chat
+            No hay recursos multimodales cargados
           </h2>
           <p className="empty-visualizer-subtitle">
-            Solicítala en el chat para ver la galería estructurada de recursos multimodales, videos, audios e imágenes sugeridos.
+            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores" para explorar la galería de recursos digitales, videos y documentos sugeridos.
           </p>
         </div>
 
@@ -116,7 +118,7 @@ export const MultimodalView: React.FC<MultimodalViewProps> = ({ data }) => {
       </div>
 
       <div className="resources-grid">
-        {(resources || []).map((res, index) => {
+        {(resources || []).map((res: RecursoMultimodal, index: number) => {
           const resTipo = res.tipo || 'sitio_web';
           const resUrl = res.url || '#';
           const embedUrl = resTipo === 'video' ? getYouTubeEmbedUrl(resUrl) : null;

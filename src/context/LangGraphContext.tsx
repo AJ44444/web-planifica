@@ -1,15 +1,20 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { 
   ChatMessage, 
-  Thread, 
-  PlanificacionClase,
-  InstrumentoEvaluacion,
-  RecursoMultimodal
+  Thread
 } from '../types';
-import { createThread, getThreads, getThreadHistory, deleteThread, streamLangGraphRun, checkServerHealth } from '../services/api';
-import { parseAgentResponse, isFullPlanResponse } from '../utils/parser';
+import { 
+  createThread, 
+  getThreads, 
+  getThreadHistory, 
+  deleteThread, 
+  streamLangGraphRun, 
+  checkServerHealth
+} from '../services/api';
 import { useAuth } from './AuthContext';
 import { ErrorModal } from '../components/ErrorModal';
+
+export type ViewTabType = 'chat' | 'planifications' | 'plan' | 'rubric' | 'multimodal' | 'history';
 
 interface LangGraphContextType {
   currentThreadId: string | null;
@@ -17,12 +22,9 @@ interface LangGraphContextType {
   messages: ChatMessage[];
   isStreaming: boolean;
   isServerOnline: boolean;
-  activeViewTab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history';
-  currentPlanData: PlanificacionClase | null;
-  currentRubricData: InstrumentoEvaluacion | null;
-  currentMultimodalData: RecursoMultimodal[] | null;
+  activeViewTab: ViewTabType;
   errorModalMessage: string | null;
-  setActiveViewTab: (tab: 'chat' | 'plan' | 'rubric' | 'multimodal' | 'history') => void;
+  setActiveViewTab: (tab: ViewTabType) => void;
   sendMessage: (text: string) => Promise<void>;
   createNewThread: () => Promise<string | null>;
   selectThread: (threadId: string) => void;
@@ -43,12 +45,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [isServerOnline, setIsServerOnline] = useState<boolean>(true);
-  const [activeViewTab, setActiveViewTab] = useState<'chat' | 'plan' | 'rubric' | 'multimodal' | 'history'>('chat');
-
-  // Dynamic Pydantic structured data states
-  const [currentPlanData, setCurrentPlanData] = useState<PlanificacionClase | null>(null);
-  const [currentRubricData, setCurrentRubricData] = useState<InstrumentoEvaluacion | null>(null);
-  const [currentMultimodalData, setCurrentMultimodalData] = useState<RecursoMultimodal[] | null>(null);
+  const [activeViewTab, setActiveViewTab] = useState<ViewTabType>('chat');
   const [errorModalMessage, setErrorModalMessage] = useState<string | null>(null);
 
   const showErrorNotification = (msg: string) => {
@@ -76,9 +73,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setThreads(loadedThreads || []);
         setCurrentThreadId(null);
         setMessages([]);
-        setCurrentPlanData(null);
-        setCurrentRubricData(null);
-        setCurrentMultimodalData(null);
       }
     };
     initThreads();
@@ -102,9 +96,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setThreads((prev) => [newThread, ...prev]);
       setCurrentThreadId(newId);
       setMessages([]);
-      setCurrentPlanData(null);
-      setCurrentRubricData(null);
-      setCurrentMultimodalData(null);
       return newId;
     } catch {
       setIsServerOnline(false);
@@ -118,32 +109,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setCurrentThreadId(threadId);
       const history = await getThreadHistory(threadId);
       const cleanHistory = history.filter((msg) => msg.role === 'user' || (msg.content && msg.content.trim()));
-
-      // Check history messages for full plan response format
-      let foundPlan = false;
-      const processedHistory = cleanHistory.map((msg) => {
-        if (msg.role === 'assistant' && msg.content) {
-          const isFull = isFullPlanResponse(msg.content);
-          if (isFull) {
-            if (!foundPlan) {
-              const parsed = parseAgentResponse(msg.content);
-              setCurrentPlanData(parsed.plan || null);
-              setCurrentRubricData(parsed.rubric || null);
-              setCurrentMultimodalData(parsed.multimodal || null);
-              foundPlan = true;
-            }
-            return { ...msg, isFullPlanResponse: true };
-          }
-        }
-        return msg;
-      });
-
-      if (!foundPlan) {
-        setCurrentPlanData(null);
-        setCurrentRubricData(null);
-        setCurrentMultimodalData(null);
-      }
-      setMessages(processedHistory);
+      setMessages(cleanHistory);
     } catch {
       showErrorNotification('Falló la conexión con el servidor. No fue posible cargar la conversación.');
     }
@@ -173,16 +139,12 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const resetChatToHero = () => {
     setCurrentThreadId(null);
     setMessages([]);
-    setCurrentPlanData(null);
-    setCurrentRubricData(null);
-    setCurrentMultimodalData(null);
     setActiveViewTab('chat');
   };
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isStreaming) return;
 
-    // Ensure mandatory thread_id exists on server before starting graph execution
     let activeThreadId = currentThreadId;
     if (!activeThreadId) {
       activeThreadId = await createNewThread();
@@ -225,24 +187,9 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       },
       onComplete: (finalMessage) => {
         setIsServerOnline(true);
-        const isFullPlan = isFullPlanResponse(finalMessage.content);
-
-        if (isFullPlan) {
-          const parsedData = parseAgentResponse(finalMessage.content);
-          setCurrentPlanData(parsedData.plan || null);
-          setCurrentRubricData(parsedData.rubric || null);
-          setCurrentMultimodalData(parsedData.multimodal || null);
-        } else if (finalMessage.structuredData) {
-          setCurrentPlanData(finalMessage.structuredData.plan || null);
-          setCurrentRubricData(finalMessage.structuredData.rubric || null);
-          setCurrentMultimodalData(finalMessage.structuredData.multimodal || null);
-        }
-
         setMessages((prev) =>
           prev.map((msg) =>
-            msg.id === streamMsgId
-              ? { ...finalMessage, id: streamMsgId, isFullPlanResponse: isFullPlan }
-              : msg
+            msg.id === streamMsgId ? { ...finalMessage, id: streamMsgId } : msg
           )
         );
         setIsStreaming(false);
@@ -252,16 +199,8 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setMessages((prev) =>
           prev.map((msg) => {
             if (msg.id === streamMsgId) {
-              // If content was already received from the server, keep it and do not overwrite with error
               if (msg.content && msg.content.trim().length > 0) {
-                const isFull = isFullPlanResponse(msg.content);
-                if (isFull) {
-                  const parsedData = parseAgentResponse(msg.content);
-                  setCurrentPlanData(parsedData.plan || null);
-                  setCurrentRubricData(parsedData.rubric || null);
-                  setCurrentMultimodalData(parsedData.multimodal || null);
-                }
-                return { ...msg, isFullPlanResponse: isFull };
+                return msg;
               }
               return {
                 ...msg,
@@ -286,9 +225,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         isStreaming,
         isServerOnline,
         activeViewTab,
-        currentPlanData,
-        currentRubricData,
-        currentMultimodalData,
         errorModalMessage,
         setActiveViewTab,
         sendMessage,
