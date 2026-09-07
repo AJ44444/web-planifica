@@ -20,7 +20,7 @@ import { Send, BookOpen, Paperclip, FileText, X } from 'lucide-react';
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const MainWorkspaceContent: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const { 
     messages, 
     sendMessage, 
@@ -58,6 +58,15 @@ const MainWorkspaceContent: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  if (isLoading) {
+    return (
+      <div className="full-loader">
+        <div className="loader-spinner animate-spin" />
+        <span>Cargando credenciales de sesión...</span>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <LoginModal />;
