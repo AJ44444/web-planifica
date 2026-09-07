@@ -22,11 +22,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
     displayContent = displayContent.replace(/data:application\/pdf;base64,[A-Za-z0-9+/=]+/g, '📄 *(Documento PDF del CNB adjunto)*');
   }
 
-  // Render floating dots ONLY while actively streaming
   const showLoadingDots = !isUser && isStreaming && !message.content;
   const showFooterDots = !isUser && isStreaming && !!message.content;
 
-  // Do not render empty assistant message rows if not streaming and no content
   if (!isUser && !displayContent && !showLoadingDots && !showFooterDots) {
     return null;
   }

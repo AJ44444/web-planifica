@@ -18,7 +18,6 @@ interface AgentStatusPanelProps {
 export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, onSelectTab }) => {
   return (
     <aside className="agent-sidebar">
-      {/* Quick Navigation Workspace Tabs */}
       <div className="sidebar-section">
         <h4 className="sidebar-title">
           <Compass size={16} color="#1d4ed8" />

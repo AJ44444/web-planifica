@@ -27,7 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Initialize session on mount by checking active HttpOnly Cookie via /auth/refresh
   useEffect(() => {
     const initAuthSession = async () => {
       try {

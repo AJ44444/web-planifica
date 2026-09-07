@@ -65,7 +65,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     checkHealth();
   }, []);
 
-  // Upon authentication, load existing threads without automatically selecting or loading the last conversation
   useEffect(() => {
     const initThreads = async () => {
       if (isAuthenticated && token) {

@@ -20,7 +20,7 @@ import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History, Papercli
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const MainWorkspaceContent: React.FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { 
     messages, 
     sendMessage, 
@@ -58,15 +58,6 @@ const MainWorkspaceContent: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  if (isLoading) {
-    return (
-      <div className="full-loader">
-        <div className="loader-spinner animate-spin" />
-        <span>Cargando credenciales de sesión...</span>
-      </div>
-    );
-  }
 
   if (!isAuthenticated) {
     return <LoginModal />;
@@ -142,15 +133,12 @@ const MainWorkspaceContent: React.FC = () => {
       <Navbar />
 
       <div className="app-main-layout">
-        {/* Sidebar with Navigation */}
         <AgentStatusPanel 
           activeTab={activeViewTab} 
           onSelectTab={handleTabSelect} 
         />
 
-        {/* Central Workspace Area */}
         <main className="central-workspace">
-          {/* View Tab Selector Bar */}
           <div className="workspace-tab-bar">
             <button
               className={`workspace-tab ${activeViewTab === 'chat' ? 'active' : ''}`}
@@ -190,12 +178,10 @@ const MainWorkspaceContent: React.FC = () => {
             </button>
           </div>
 
-          {/* Tab Content Display */}
           <div className={`workspace-scroll-area ${activeViewTab === 'chat' ? 'chat-mode' : ''}`}>
             {activeViewTab === 'chat' && (
               <div className="chat-view-wrapper">
                 {messages.length === 0 ? (
-                  /* Centered hero state before first message is sent */
                   <div className="centered-hero-state">
                     <div className="hero-logo-box">
                       <BookOpen size={44} color="#ffffff" />
@@ -204,7 +190,6 @@ const MainWorkspaceContent: React.FC = () => {
                     <p className="hero-subtitle">Plataforma Educativa Inteligente</p>
                   </div>
                 ) : (
-                  /* Messages timeline */
                   <div className="messages-timeline">
                     {messages.map((msg, index) => (
                       <ChatMessage
@@ -217,9 +202,7 @@ const MainWorkspaceContent: React.FC = () => {
                   </div>
                 )}
 
-                {/* Multiline auto-expanding textarea input form */}
                 <form className="chat-input-form" onSubmit={handleSend}>
-                  {/* File Attachment Chip */}
                   {attachedFile && (
                     <div className="chat-attachment-chip">
                       <FileText size={16} className="chip-icon" />

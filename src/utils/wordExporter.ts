@@ -28,7 +28,6 @@ function saveDocument(blob: Blob, fileName: string) {
 
 function formatUrlForWord(url: string): string {
   if (!url) return '';
-  // Insert zero-width space (\u200B) after URL delimiters so Word wraps long links cleanly inside column
   return url.replace(/([/\\?&=#._%-])/g, '$1\u200B');
 }
 
@@ -47,9 +46,6 @@ export async function exportToWord(
   const filas = planData.desarrollo_curricular || [];
 
   try {
-    // ==========================================
-    // 1. ENCABEZADO OFICIAL (Centrado y Negrita)
-    // ==========================================
     const headingParagraphs: Paragraph[] = [];
 
     const centroEducativoText = (enc.centro_educativo || '').trim();
@@ -106,9 +102,6 @@ export async function exportToWord(
       );
     }
 
-    // ==========================================
-    // 2. TABLA 1: DATOS GENERALES DEL CURSO
-    // ==========================================
     const gradoSeccionText = [enc.grado || '', enc.seccion || ''].filter(Boolean).join(' ');
 
     const table1 = new Table({
@@ -201,9 +194,6 @@ export async function exportToWord(
       spacing: { before: 240, after: 120 },
     });
 
-    // ==========================================
-    // 3. TABLA 2: MATRIZ DE PLANIFICACIÓN
-    // ==========================================
     const table2Headers = new TableRow({
       children: [
         new TableCell({
@@ -353,9 +343,6 @@ export async function exportToWord(
       table2,
     ];
 
-    // ==========================================
-    // 4. TABLA 3: INSTRUMENTOS DE EVALUACIÓN
-    // ==========================================
     const planTools: any[] = rubricData?.herramientas && rubricData.herramientas.length > 0
       ? rubricData.herramientas
       : (rubricData?.instrumento_generado?.criterios ? [{
@@ -511,9 +498,6 @@ export async function exportToWord(
       }
     }
 
-    // ==========================================
-    // 5. RECURSOS MULTIMODALES (FORMATO TABLA)
-    // ==========================================
     if (multimodalData && Array.isArray(multimodalData) && multimodalData.length > 0) {
       docChildren.push(
         new Paragraph({
@@ -532,10 +516,9 @@ export async function exportToWord(
         })
       );
 
-      // Widths: 15% (1944 DXA), 55% (7128 DXA), 30% (3888 DXA) for total 12,960 DXA landscape width
-      const colWidth1 = 1944; // 15%
-      const colWidth2 = 7128; // 55%
-      const colWidth3 = 3888; // 30%
+      const colWidth1 = 1944;
+      const colWidth2 = 7128;
+      const colWidth3 = 3888;
 
       const resourceTableHeaders = new TableRow({
         children: [
@@ -622,9 +605,6 @@ export async function exportToWord(
       );
     }
 
-    // ==========================================
-    // 6. CONFIGURACIÓN DEL DOCUMENTO (LANDSCAPE)
-    // ==========================================
     const doc = new Document({
       sections: [
         {
@@ -632,11 +612,11 @@ export async function exportToWord(
             page: {
               size: {
                 orientation: PageOrientation.LANDSCAPE,
-                width: convertMillimetersToTwip(215.9), // Carta Horizontal (8.5" x 11")
+                width: convertMillimetersToTwip(215.9),
                 height: convertMillimetersToTwip(279.4),
               },
               margin: {
-                top: convertInchesToTwip(1), // 1 pulgada de margen
+                top: convertInchesToTwip(1),
                 bottom: convertInchesToTwip(1),
                 left: convertInchesToTwip(1),
                 right: convertInchesToTwip(1),
@@ -648,9 +628,6 @@ export async function exportToWord(
       ],
     });
 
-    // ==========================================
-    // 7. EMPAQUETADO Y DESCARGA
-    // ==========================================
     const blob = await Packer.toBlob(doc);
     const rawCourseName = enc.curso || enc.carrera || enc.grado || '';
     const safeCourse = rawCourseName

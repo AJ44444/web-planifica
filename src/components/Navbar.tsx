@@ -20,7 +20,6 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Server Connection Badge */}
         <div className={`server-status ${isServerOnline ? 'online' : 'offline'}`}>
           {isServerOnline ? (
             <>
@@ -37,7 +36,6 @@ export const Navbar: React.FC = () => {
       </div>
 
       <div className="navbar-center">
-        {/* Thread Selector */}
         <div className="thread-selector-container">
           <select
             className="thread-select"
@@ -58,7 +56,6 @@ export const Navbar: React.FC = () => {
       </div>
 
       <div className="navbar-right">
-        {/* Teacher Profile */}
         {user && (
           <div className="user-profile-chip">
             {user.picture ? (

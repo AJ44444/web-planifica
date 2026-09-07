@@ -26,7 +26,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
 
   const data = plan || null;
 
-  // Selected tree node path state for interactive branch highlight
   const [selectedNode, setSelectedNode] = useState<{
     filaId: number;
     indicatorIdx: number;
@@ -109,7 +108,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
       selectedNode?.indicatorIdx === indicatorIdx &&
       selectedNode?.contentIdx === contentIdx
     ) {
-      setSelectedNode(null); // toggle off
+      setSelectedNode(null);
     } else {
       setSelectedNode({ filaId, indicatorIdx, contentIdx });
     }
@@ -139,9 +138,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
         </button>
       </div>
 
-      {/* Administrative Header (8 Cards arranged 4 and 4) */}
       <div className="plan-metadata-grid">
-        {/* Row 1: 4 Cards */}
         <div className="meta-card">
           <span className="meta-label"><Building2 size={12} /> Centro Educativo</span>
           <span className="meta-value">{encabezado?.centro_educativo}</span>
@@ -159,7 +156,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
           <span className="meta-value">{encabezado?.carrera}</span>
         </div>
 
-        {/* Row 2: 4 Cards */}
         <div className="meta-card">
           <span className="meta-label"><BookOpen size={12} /> Curso</span>
           <span className="meta-value">{encabezado?.curso || (encabezado as any)?.subarea}</span>
@@ -178,7 +174,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
         </div>
       </div>
 
-      {/* Development Curriculum Blocks (Independent block for each row) */}
       {(desarrollo_curricular || []).map((fila: FilaCurricularPlan, filaIdx: number) => {
         const filaId = fila.id_fila || (filaIdx + 1);
         const isFilaActive = selectedNode?.filaId === filaId;
@@ -192,9 +187,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
                 <span className="banner-text">## {fila.titulo_fila}</span>
               </div>
             )}
-            {/* Tree View: Competencia => Indicadores de logro => Contenidos */}
             <div className={`competency-tree-box ${isFilaActive ? 'has-active-path' : ''}`}>
-              {/* Root Node: Competencia */}
               <div className={`tree-root-node ${isFilaActive ? 'active-root' : ''}`}>
                 <div className="box-title">
                   <Target size={16} color={isFilaActive ? '#2563eb' : '#1d4ed8'} />
@@ -203,7 +196,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
                 <p className="competency-text">{fila.competencia}</p>
               </div>
 
-              {/* Tree Hierarchy Structure */}
               <div className="tree-container">
                 <div className={`tree-branches-wrapper ${isFilaActive ? 'trunk-highlighted' : ''}`}>
                   {indicadores.map((ind: any, idx: number) => {
@@ -212,7 +204,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
 
                     return (
                       <div key={idx} className="tree-branch-group">
-                        {/* Branch Node: Indicador de logro */}
                         <div
                           className={`tree-branch-node ${isIndicatorSelected ? 'active-branch' : ''}`}
                           onClick={() => handleNodeClick(filaId, idx)}
@@ -225,7 +216,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
                           </div>
                         </div>
 
-                        {/* Leaf Nodes: Contenidos */}
                         {ind.contenidos && ind.contenidos.length > 0 && (
                           <div className={`tree-leaves-wrapper ${isIndicatorSelected ? 'subtrunk-highlighted' : ''}`}>
                             {ind.contenidos.map((c: string, cIdx: number) => {
@@ -259,7 +249,6 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
               </div>
             </div>
 
-            {/* Learning Activities */}
             <div className="plan-table-wrapper">
               <h3 className="section-subtitle">
                 <Calendar size={16} color="#2563eb" />

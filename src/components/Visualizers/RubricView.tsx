@@ -2,7 +2,6 @@ import React from 'react';
 import { ClipboardCheck, Award } from 'lucide-react';
 import type { InstrumentoEvaluacion, CriterioEvaluacion } from '../../types';
 
-// Helper function to strip score points from scale labels e.g. "Excelente (4 pts)" -> "Excelente"
 const cleanScaleLabel = (label: string): string => {
   return label.replace(/\s*\(\d+\s*(?:pts|puntos)?\)/gi, '').trim();
 };

@@ -42,12 +42,10 @@ export const LoginModal: React.FC = () => {
 
   return (
     <div className="login-backdrop">
-      {/* Background ambient lighting effects */}
       <div className="bg-glow bg-glow-1" />
       <div className="bg-glow bg-glow-2" />
 
       <div className="login-container">
-        {/* Left Column: Visual Brand Hero & Agent Network Narrative (LangSmith style) */}
         <div className="login-hero-col">
           <div className="hero-main-content">
             <h1 className="hero-headline">
@@ -58,7 +56,6 @@ export const LoginModal: React.FC = () => {
             </p>
           </div>
 
-          {/* Interactive Agent Node Network Graphic with Traveling Pulse Animation */}
           <div className="agent-graph-graphic">
             <div className="graph-svg-container">
               <svg className="graph-lines" viewBox="0 0 500 120" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -78,7 +75,6 @@ export const LoginModal: React.FC = () => {
                   </filter>
                 </defs>
 
-                {/* Base guide connecting path */}
                 <path
                   d="M 100 60 C 150 25, 200 95, 250 60 C 300 25, 350 95, 400 60"
                   stroke="#cbd5e1"
@@ -86,16 +82,13 @@ export const LoginModal: React.FC = () => {
                   strokeDasharray="4 4"
                 />
 
-                {/* Main animated flow line */}
                 <path
                   d="M 100 60 C 150 25, 200 95, 250 60 C 300 25, 350 95, 400 60"
                   stroke="url(#graph-grad-1)"
                   strokeWidth="2.5"
                 />
 
-                {/* Traveling Energy Orb (Procesador CNB => Supervisor => Planificador) */}
                 <g>
-                  {/* Outer glowing aura */}
                   <circle r="7" fill="#2563eb" filter="url(#orb-glow)" opacity="0.85">
                     <animateMotion
                       dur="3.2s"
@@ -103,7 +96,6 @@ export const LoginModal: React.FC = () => {
                       path="M 100 60 C 150 25, 200 95, 250 60 C 300 25, 350 95, 400 60"
                     />
                   </circle>
-                  {/* Inner bright core */}
                   <circle r="3.5" fill="#ffffff">
                     <animateMotion
                       dur="3.2s"
@@ -114,7 +106,6 @@ export const LoginModal: React.FC = () => {
                 </g>
               </svg>
 
-              {/* Luminous Agent Nodes */}
               <div className="graph-node node-1" title="Procesador CNB">
                 <div className="node-ping" />
                 <BookOpen size={14} color="#ffffff" />
@@ -133,7 +124,6 @@ export const LoginModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Trust Badges */}
           <div className="hero-trust-footer">
             <span className="trust-label">Impulsado por</span>
             <div className="trust-badges-grid">
@@ -153,7 +143,6 @@ export const LoginModal: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Dark Glassmorphic Login Card */}
         <div className="login-card-col">
           <div className="auth-card">
             <div className="card-header">
