@@ -3,6 +3,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LangGraphProvider, useLangGraph, type ViewTabType } from './context/LangGraphContext';
 
+import { Navbar } from './components/Navbar';
 import { AgentStatusPanel } from './components/AgentStatusPanel';
 import { ChatMessage } from './components/ChatMessage';
 import { LessonPlanView } from './components/Visualizers/LessonPlanView';
@@ -14,7 +15,7 @@ import { LoginModal } from './components/LoginModal';
 
 import { getLessonPlanDetail } from './services/api';
 import type { LessonPlanDetailResponse } from './types';
-import { Send, MessageSquare, BookOpen, ClipboardCheck, Video, History, Paperclip, FileText, X, Layers } from 'lucide-react';
+import { Send, BookOpen, Paperclip, FileText, X } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -129,6 +130,8 @@ const MainWorkspaceContent: React.FC = () => {
 
   return (
     <div className="app-shell">
+      <Navbar />
+
       <div className="app-main-layout">
         <AgentStatusPanel 
           activeTab={activeViewTab} 
@@ -136,45 +139,6 @@ const MainWorkspaceContent: React.FC = () => {
         />
 
         <main className="central-workspace">
-          <div className="workspace-tab-bar">
-            <button
-              className={`workspace-tab ${activeViewTab === 'chat' ? 'active' : ''}`}
-              onClick={() => handleTabSelect('chat')}
-            >
-              <MessageSquare size={16} /> Chat
-            </button>
-            <button
-              className={`workspace-tab ${activeViewTab === 'planifications' ? 'active' : ''}`}
-              onClick={() => handleTabSelect('planifications')}
-            >
-              <Layers size={16} /> Planificaciones
-            </button>
-            <button
-              className={`workspace-tab ${activeViewTab === 'plan' ? 'active' : ''}`}
-              onClick={() => handleTabSelect('plan')}
-            >
-              <BookOpen size={16} /> Visualizador de Plan
-            </button>
-            <button
-              className={`workspace-tab ${activeViewTab === 'rubric' ? 'active' : ''}`}
-              onClick={() => handleTabSelect('rubric')}
-            >
-              <ClipboardCheck size={16} /> Herramientas de Evaluación
-            </button>
-            <button
-              className={`workspace-tab ${activeViewTab === 'multimodal' ? 'active' : ''}`}
-              onClick={() => handleTabSelect('multimodal')}
-            >
-              <Video size={16} /> Recursos Multimodales
-            </button>
-            <button
-              className={`workspace-tab ${activeViewTab === 'history' ? 'active' : ''}`}
-              onClick={() => handleTabSelect('history')}
-            >
-              <History size={16} /> Historial
-            </button>
-          </div>
-
           <div className={`workspace-scroll-area ${activeViewTab === 'chat' ? 'chat-mode' : ''}`}>
             {activeViewTab === 'chat' && (
               <div className="chat-view-wrapper">
@@ -309,7 +273,7 @@ const MainWorkspaceContent: React.FC = () => {
         .app-main-layout {
           display: flex;
           flex: 1;
-          height: 100vh;
+          height: calc(100vh - 68px);
           overflow: hidden;
         }
 
@@ -320,45 +284,6 @@ const MainWorkspaceContent: React.FC = () => {
           flex-direction: column;
           background: #f8fafc;
           overflow: hidden;
-        }
-
-        .workspace-tab-bar {
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.75rem 1.5rem;
-          background: #ffffff;
-          border-bottom: 1px solid #e2e8f0;
-          overflow-x: auto;
-        }
-
-        .workspace-tab {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          padding: 0.5rem 0.85rem;
-          border-radius: 0.5rem;
-          border: 1px solid transparent;
-          background: transparent;
-          color: #64748b;
-          font-weight: 500;
-          font-size: 0.85rem;
-          cursor: pointer;
-          transition: all 0.15s ease;
-          white-space: nowrap;
-        }
-
-        .workspace-tab:hover {
-          background: #f8fafc;
-          color: #1d4ed8;
-        }
-
-        .workspace-tab.active {
-          background: #eff6ff;
-          color: #1d4ed8;
-          border-color: #bfdbfe;
-          font-weight: 600;
         }
 
         .workspace-scroll-area {
@@ -563,29 +488,8 @@ const MainWorkspaceContent: React.FC = () => {
 
         /* Responsive Mobile & Tablet Rules */
         @media (max-width: 900px) {
-          .agent-sidebar {
-            display: none !important;
-          }
-
           .app-main-layout {
             height: calc(100vh - 60px);
-          }
-
-          .workspace-tab-bar {
-            padding: 0.5rem 0.75rem;
-            gap: 0.35rem;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-          }
-
-          .workspace-tab-bar::-webkit-scrollbar {
-            display: none;
-          }
-
-          .workspace-tab {
-            padding: 0.45rem 0.75rem;
-            font-size: 0.8rem;
           }
 
           .workspace-scroll-area {
