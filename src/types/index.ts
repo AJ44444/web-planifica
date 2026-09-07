@@ -3,7 +3,6 @@ export interface User {
   email: string;
   nombres: string;
   rol?: string;
-  picture?: string;
 }
 
 export interface MetadatosPlan {

@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ChatMessage as ChatMessageType } from '../types';
 import { Bot, User } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -11,11 +10,7 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
-  const { user } = useAuth();
-  const [imgError, setImgError] = useState(false);
-
   const isUser = message.role === 'user';
-  const userPhoto = user?.picture;
   let displayContent = message.content;
 
   if (displayContent && displayContent.includes('data:application/pdf;base64,')) {
@@ -34,16 +29,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
       <div className="avatar-cell">
         {isUser ? (
           <div className="user-chat-avatar">
-            {userPhoto && !imgError ? (
-              <img
-                src={userPhoto}
-                alt={user?.nombres}
-                className="user-avatar-img"
-                onError={() => setImgError(true)}
-              />
-            ) : (
-              <User size={18} color="#ffffff" />
-            )}
+            <User size={18} color="#ffffff" />
           </div>
         ) : (
           <div className="assistant-chat-avatar">

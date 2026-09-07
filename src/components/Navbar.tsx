@@ -58,13 +58,9 @@ export const Navbar: React.FC = () => {
       <div className="navbar-right">
         {user && (
           <div className="user-profile-chip">
-            {user.picture ? (
-              <img src={user.picture} alt={user.nombres} className="user-avatar" />
-            ) : (
-              <div className="user-avatar-fallback">
-                {(user.nombres).slice(0, 2).toUpperCase()}
-              </div>
-            )}
+            <div className="user-avatar-fallback">
+              {(user.nombres).slice(0, 2).toUpperCase()}
+            </div>
             <div className="user-info">
               <span className="user-name">{user.nombres}</span>
             </div>
