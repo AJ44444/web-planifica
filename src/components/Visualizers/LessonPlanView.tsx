@@ -15,13 +15,9 @@ import {
   FileDown
 } from 'lucide-react';
 
-import type { PlanificacionClase, FilaCurricularPlan } from '../../types';
+import type { FilaCurricularPlan, VisualizadoresData } from '../../types';
 
-export interface LessonPlanViewProps {
-  plan?: PlanificacionClase | null;
-}
-
-export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
+export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, multimodals }) => {
   const { showErrorNotification } = useLangGraph();
 
   const data = plan || null;
@@ -43,7 +39,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
             No hay ninguna planificación cargada en los visualizadores
           </h2>
           <p className="empty-visualizer-subtitle">
-            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores" en una planificación para explorar su detalle.
+            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".
           </p>
         </div>
 
@@ -131,7 +127,7 @@ export const LessonPlanView: React.FC<LessonPlanViewProps> = ({ plan }) => {
 
         <button
           className="btn-export-word"
-          onClick={() => exportToWord(data, null, null, showErrorNotification)}
+          onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
           title="Exportar planificación a Microsoft Word (.docx)"
         >
           <FileDown size={16} /> Exportar

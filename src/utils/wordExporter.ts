@@ -13,7 +13,7 @@ import {
   convertInchesToTwip,
   convertMillimetersToTwip,
 } from 'docx';
-import type { PlanificacionClase, InstrumentoEvaluacion, RecursoMultimodal } from '../types';
+import type { VisualizadoresData } from '../types';
 
 function saveDocument(blob: Blob, fileName: string) {
   const url = window.URL.createObjectURL(blob);
@@ -28,15 +28,18 @@ function saveDocument(blob: Blob, fileName: string) {
 
 function formatUrlForWord(url: string): string {
   if (!url) return '';
+  // Insert zero-width space (\u200B) after URL delimiters so Word wraps long links cleanly inside column
   return url.replace(/([/\\?&=#._%-])/g, '$1\u200B');
 }
 
 export async function exportToWord(
-  planData?: PlanificacionClase | null,
-  rubricData?: InstrumentoEvaluacion | null,
-  multimodalData?: RecursoMultimodal[] | null,
+  data?: VisualizadoresData | null,
   onErrorNotification?: (msg: string) => void
 ): Promise<void> {
+  const planData = data?.plan;
+  const rubricData = data?.rubrics?.[0] || null;
+  const multimodalData = data?.multimodals || null;
+
   if (!planData || !planData.encabezado) {
     if (onErrorNotification) onErrorNotification('Datos de planificación incompletos.');
     return;

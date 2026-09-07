@@ -1,16 +1,12 @@
 import React from 'react';
 import { ClipboardCheck, Award } from 'lucide-react';
-import type { InstrumentoEvaluacion, CriterioEvaluacion } from '../../types';
+import type { InstrumentoEvaluacion, CriterioEvaluacion, VisualizadoresData } from '../../types';
 
 const cleanScaleLabel = (label: string): string => {
   return label.replace(/\s*\(\d+\s*(?:pts|puntos)?\)/gi, '').trim();
 };
 
-export interface RubricViewProps {
-  rubrics?: InstrumentoEvaluacion[] | null;
-}
-
-export const RubricView: React.FC<RubricViewProps> = ({ rubrics }) => {
+export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
   const rawTools = rubrics || [];
   const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
     tipo: t.tipo || 'rubrica',
@@ -27,10 +23,10 @@ export const RubricView: React.FC<RubricViewProps> = ({ rubrics }) => {
             <ClipboardCheck size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No hay herramientas de evaluación cargadas
+            No hay herramientas de evaluación cargadas o la planificación no contiene rúbricas analíticas ni listas de cotejo.
           </h2>
           <p className="empty-visualizer-subtitle">
-            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores" para explorar las rúbricas analíticas y listas de cotejo.
+            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".
           </p>
         </div>
 

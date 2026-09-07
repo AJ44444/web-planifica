@@ -3,7 +3,6 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LangGraphProvider, useLangGraph, type ViewTabType } from './context/LangGraphContext';
 
-import { Navbar } from './components/Navbar';
 import { AgentStatusPanel } from './components/AgentStatusPanel';
 import { ChatMessage } from './components/ChatMessage';
 import { LessonPlanView } from './components/Visualizers/LessonPlanView';
@@ -130,8 +129,6 @@ const MainWorkspaceContent: React.FC = () => {
 
   return (
     <div className="app-shell">
-      <Navbar />
-
       <div className="app-main-layout">
         <AgentStatusPanel 
           activeTab={activeViewTab} 
@@ -278,13 +275,21 @@ const MainWorkspaceContent: React.FC = () => {
 
             {activeViewTab === 'planifications' && <PlanificationsListView onLoadVisualizers={handleLoadVisualizers} />}
             {activeViewTab === 'plan' && (
-              <LessonPlanView plan={selectedPlanDetail?.planificacion} />
+              <LessonPlanView 
+                plan={selectedPlanDetail?.planificacion} 
+                rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
+                multimodals={selectedPlanDetail?.recursos_multimodales} 
+              />
             )}
             {activeViewTab === 'rubric' && (
-              <RubricView rubrics={selectedPlanDetail?.instrumentos_evaluacion} />
+              <RubricView 
+                rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
+              />
             )}
             {activeViewTab === 'multimodal' && (
-              <MultimodalView multimodals={selectedPlanDetail?.recursos_multimodales} />
+              <MultimodalView 
+                multimodals={selectedPlanDetail?.recursos_multimodales} 
+              />
             )}
             {activeViewTab === 'history' && <ThreadHistoryView />}
           </div>
@@ -304,7 +309,7 @@ const MainWorkspaceContent: React.FC = () => {
         .app-main-layout {
           display: flex;
           flex: 1;
-          height: calc(100vh - 68px);
+          height: 100vh;
           overflow: hidden;
         }
 

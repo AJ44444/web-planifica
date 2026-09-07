@@ -123,3 +123,9 @@ export interface LessonPlanDetailResponse {
   instrumentos_evaluacion?: InstrumentoEvaluacion[];
   recursos_multimodales?: RecursoMultimodal[];
 }
+
+export interface VisualizadoresData {
+  plan?: PlanificacionClase | null;
+  rubrics?: InstrumentoEvaluacion[] | null;
+  multimodals?: RecursoMultimodal[] | null;
+}

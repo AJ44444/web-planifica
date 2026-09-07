@@ -1,12 +1,8 @@
 import React from 'react';
 import { Video, ExternalLink, MonitorPlay, Headphones, Layers, FileText, Globe } from 'lucide-react';
-import type { RecursoMultimodal } from '../../types';
+import type { RecursoMultimodal, VisualizadoresData } from '../../types';
 
-export interface MultimodalViewProps {
-  multimodals?: RecursoMultimodal[] | null;
-}
-
-export const MultimodalView: React.FC<MultimodalViewProps> = ({ multimodals }) => {
+export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) => {
   const data = multimodals || [];
 
   if (data.length === 0) {
@@ -17,10 +13,10 @@ export const MultimodalView: React.FC<MultimodalViewProps> = ({ multimodals }) =
             <Video size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No hay recursos multimodales cargados
+            No hay recursos multimodales cargados o la planificación no contiene recursos digitales, videos ni documentos sugeridos.
           </h2>
           <p className="empty-visualizer-subtitle">
-            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores" para explorar la galería de recursos digitales, videos y documentos sugeridos.
+            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".
           </p>
         </div>
 
