@@ -37,7 +37,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
             {userPhoto && !imgError ? (
               <img
                 src={userPhoto}
-                alt={user?.name || "Usuario"}
+                alt={user?.nombres}
                 className="user-avatar-img"
                 onError={() => setImgError(true)}
               />

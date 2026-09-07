@@ -59,14 +59,14 @@ export const Navbar: React.FC = () => {
         {user && (
           <div className="user-profile-chip">
             {user.picture ? (
-              <img src={user.picture} alt={user.name} className="user-avatar" />
+              <img src={user.picture} alt={user.nombres} className="user-avatar" />
             ) : (
               <div className="user-avatar-fallback">
-                {user.name.slice(0, 2).toUpperCase()}
+                {(user.nombres).slice(0, 2).toUpperCase()}
               </div>
             )}
             <div className="user-info">
-              <span className="user-name">{user.name}</span>
+              <span className="user-name">{user.nombres}</span>
             </div>
             <button className="btn-icon-logout" onClick={logout} title="Cerrar Sesión">
               <LogOut size={16} />

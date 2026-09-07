@@ -1,9 +1,9 @@
 export interface User {
-  google_id: string;
-  name: string;
+  id_usuario: string;
   email: string;
+  nombres: string;
+  rol?: string;
   picture?: string;
-  role?: string;
 }
 
 export interface MetadatosPlan {
