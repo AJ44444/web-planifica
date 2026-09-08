@@ -2,10 +2,6 @@ import React from 'react';
 import { ClipboardCheck } from 'lucide-react';
 import type { InstrumentoEvaluacion, CriterioEvaluacion, VisualizadoresData } from '../../types';
 
-const cleanScaleLabel = (label: string): string => {
-  return label.replace(/\s*\(\d+\s*(?:pts|puntos)?\)/gi, '').trim();
-};
-
 export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
   const rawTools = rubrics || [];
   const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
@@ -102,7 +98,7 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
 
       {tools.map((tool: any, tIdx: number) => {
         const isRubrica = tool.tipo === 'rubrica';
-        const cleanedEscala = (tool.escala || []).map(cleanScaleLabel);
+        const cleanedEscala = (tool.escala || []);
 
         return (
           <div key={tIdx} className="rubric-section" style={{ marginBottom: tIdx < tools.length - 1 ? '1.75rem' : '0' }}>
