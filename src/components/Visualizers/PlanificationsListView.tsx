@@ -2,12 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { getLessonPlans } from '../../services/api';
 import { formatGMT6Date } from '../../utils/dateFormatter';
 import { useLangGraph } from '../../context/LangGraphContext';
-import type { PlanificacionClase } from '../../types';
+import type { PlanificacionClase, PlanificationsListViewProps } from '../../types';
 import { Layers, ChevronLeft, ChevronRight, Eye, Loader2, Sparkles, RefreshCw } from 'lucide-react';
-
-export interface PlanificationsListViewProps {
-  onLoadVisualizers?: (planId: string) => Promise<boolean>;
-}
 
 export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ onLoadVisualizers }) => {
   const { showErrorNotification } = useLangGraph();

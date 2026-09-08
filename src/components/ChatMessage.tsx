@@ -1,13 +1,8 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { ChatMessage as ChatMessageType } from '../types';
+import type { ChatMessageProps } from '../types';
 import { Bot, User } from 'lucide-react';
-
-interface ChatMessageProps {
-  message: ChatMessageType;
-  isStreaming?: boolean;
-}
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
   const isUser = message.role === 'user';

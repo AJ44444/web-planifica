@@ -8,12 +8,7 @@ import {
   History,
   Layers
 } from 'lucide-react';
-import type { ViewTabType } from '../context/LangGraphContext';
-
-interface AgentStatusPanelProps {
-  activeTab: ViewTabType;
-  onSelectTab: (tab: ViewTabType) => void;
-}
+import type { AgentStatusPanelProps } from '../types';
 
 export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, onSelectTab }) => {
   return (

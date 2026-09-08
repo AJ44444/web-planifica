@@ -128,3 +128,51 @@ export interface VisualizadoresData {
   rubrics?: InstrumentoEvaluacion[] | null;
   multimodals?: RecursoMultimodal[] | null;
 }
+
+export type ViewTabType = 'chat' | 'planifications' | 'plan' | 'rubric' | 'multimodal' | 'history';
+
+export interface StreamCallbacks {
+  onToken: (token: string) => void;
+  onComplete: (fullMessage: ChatMessage) => void;
+  onError: (error: Error) => void;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  loginWithToken: (idToken: string) => Promise<void>;
+  logout: () => Promise<void>;
+}
+
+export interface LangGraphContextType {
+  currentThreadId: string | null;
+  threads: Thread[];
+  messages: ChatMessage[];
+  isStreaming: boolean;
+  isServerOnline: boolean;
+  activeViewTab: ViewTabType;
+  setActiveViewTab: (tab: ViewTabType) => void;
+  sendMessage: (text: string) => Promise<void>;
+  createNewThread: () => Promise<string | null>;
+  selectThread: (threadId: string) => void;
+  deleteThreadById: (threadId: string) => Promise<void>;
+  resetChatToHero: () => void;
+  checkHealth: () => Promise<void>;
+  showErrorNotification: (msg: string) => void;
+  clearErrorNotification: () => void;
+}
+
+export interface AgentStatusPanelProps {
+  activeTab: ViewTabType;
+  onSelectTab: (tab: ViewTabType) => void;
+}
+
+export interface ChatMessageProps {
+  message: ChatMessage;
+  isStreaming?: boolean;
+}
+
+export interface PlanificationsListViewProps {
+  onLoadVisualizers?: (planId: string) => Promise<boolean>;
+}

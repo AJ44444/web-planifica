@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { LangGraphProvider, useLangGraph, type ViewTabType } from './context/LangGraphContext';
+import { LangGraphProvider, useLangGraph } from './context/LangGraphContext';
+import type { ViewTabType } from './types';
 
 import { Navbar } from './components/Navbar';
 import { AgentStatusPanel } from './components/AgentStatusPanel';
@@ -60,12 +61,7 @@ const MainWorkspaceContent: React.FC = () => {
   }, [messages]);
 
   if (isLoading) {
-    return (
-      <div className="full-loader">
-        <div className="loader-spinner" />
-        <span>Cargando sesión...</span>
-      </div>
-    );
+    return null;
   }
 
   if (!isAuthenticated) {
@@ -473,26 +469,6 @@ const MainWorkspaceContent: React.FC = () => {
           padding: 0.65rem 1.15rem;
           border-radius: 0.6rem;
           align-self: flex-end;
-        }
-
-        .full-loader {
-          height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 1rem;
-          color: #1d4ed8;
-          font-weight: 600;
-          font-size: 1rem;
-        }
-
-        .loader-spinner {
-          width: 42px;
-          height: 42px;
-          border: 4px solid #bfdbfe;
-          border-top-color: #1d4ed8;
-          border-radius: 50%;
         }
 
         /* Responsive Mobile & Tablet Rules */

@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { 
   ChatMessage, 
-  Thread
+  Thread,
+  ViewTabType,
+  LangGraphContextType
 } from '../types';
 import { 
   createThread, 
@@ -12,28 +14,6 @@ import {
   checkServerHealth
 } from '../services/api';
 import { useAuth } from './AuthContext';
-import { ErrorModal } from '../components/ErrorModal';
-
-export type ViewTabType = 'chat' | 'planifications' | 'plan' | 'rubric' | 'multimodal' | 'history';
-
-interface LangGraphContextType {
-  currentThreadId: string | null;
-  threads: Thread[];
-  messages: ChatMessage[];
-  isStreaming: boolean;
-  isServerOnline: boolean;
-  activeViewTab: ViewTabType;
-  errorModalMessage: string | null;
-  setActiveViewTab: (tab: ViewTabType) => void;
-  sendMessage: (text: string) => Promise<void>;
-  createNewThread: () => Promise<string | null>;
-  selectThread: (threadId: string) => void;
-  deleteThreadById: (threadId: string) => Promise<void>;
-  resetChatToHero: () => void;
-  checkHealth: () => Promise<void>;
-  showErrorNotification: (msg: string) => void;
-  clearErrorNotification: () => void;
-}
 
 const LangGraphContext = createContext<LangGraphContextType | undefined>(undefined);
 
@@ -46,15 +26,12 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [isServerOnline, setIsServerOnline] = useState<boolean>(true);
   const [activeViewTab, setActiveViewTab] = useState<ViewTabType>('chat');
-  const [errorModalMessage, setErrorModalMessage] = useState<string | null>(null);
 
   const showErrorNotification = (msg: string) => {
-    setErrorModalMessage(msg);
+    window.alert(msg);
   };
 
-  const clearErrorNotification = () => {
-    setErrorModalMessage(null);
-  };
+  const clearErrorNotification = () => {};
 
   const checkHealth = async () => {
     const isOk = await checkServerHealth();
@@ -224,7 +201,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         isStreaming,
         isServerOnline,
         activeViewTab,
-        errorModalMessage,
         setActiveViewTab,
         sendMessage,
         createNewThread,
@@ -237,11 +213,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }}
     >
       {children}
-      <ErrorModal
-        isOpen={!!errorModalMessage}
-        message={errorModalMessage || ''}
-        onClose={clearErrorNotification}
-      />
     </LangGraphContext.Provider>
   );
 };

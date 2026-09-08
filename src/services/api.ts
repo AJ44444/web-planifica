@@ -1,4 +1,4 @@
-import type { ChatMessage, Thread } from '../types';
+import type { ChatMessage, Thread, StreamCallbacks } from '../types';
 import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
@@ -211,12 +211,6 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
     // Fallback gracefully without console logs
   }
   return [];
-}
-
-export interface StreamCallbacks {
-  onToken: (token: string) => void;
-  onComplete: (fullMessage: ChatMessage) => void;
-  onError: (error: Error) => void;
 }
 
 export async function streamLangGraphRun(

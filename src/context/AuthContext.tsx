@@ -1,14 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { User } from '../types';
+import type { User, AuthContextType } from '../types';
 import { loginToServer, verifyServerSession, logoutFromServer } from '../services/api';
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  loginWithToken: (idToken: string) => Promise<void>;
-  logout: () => Promise<void>;
-}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

@@ -28,7 +28,6 @@ function saveDocument(blob: Blob, fileName: string) {
 
 function formatUrlForWord(url: string): string {
   if (!url) return '';
-  // Insert zero-width space (\u200B) after URL delimiters so Word wraps long links cleanly inside column
   return url.replace(/([/\\?&=#._%-])/g, '$1\u200B');
 }
 

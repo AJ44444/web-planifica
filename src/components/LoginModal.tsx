@@ -2,7 +2,6 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { ShieldCheck, Cpu, BookOpen, Layers, CheckCircle2 } from 'lucide-react';
-import { ErrorModal } from './ErrorModal';
 
 const GoogleAuthButton = React.memo<{
   onSuccess: (credentialResponse: CredentialResponse) => void;
@@ -23,21 +22,19 @@ const GoogleAuthButton = React.memo<{
 
 export const LoginModal: React.FC = () => {
   const { loginWithToken } = useAuth();
-  const [authError, setAuthError] = React.useState<string | null>(null);
 
   const handleGoogleSuccess = React.useCallback(async (credentialResponse: CredentialResponse) => {
     if (credentialResponse.credential) {
       try {
-        setAuthError(null);
         await loginWithToken(credentialResponse.credential);
       } catch {
-        setAuthError('Falló la conexión con el servidor. No fue posible completar la autenticación.');
+        window.alert('Falló la conexión con el servidor. No fue posible completar la autenticación.');
       }
     }
   }, [loginWithToken]);
 
   const handleGoogleError = React.useCallback(() => {
-    setAuthError('Ocurrió un inconveniente al conectar con el servicio de autenticación de Google.');
+    window.alert('Ocurrió un inconveniente al conectar con el servicio de autenticación de Google.');
   }, []);
 
   return (
@@ -551,11 +548,6 @@ export const LoginModal: React.FC = () => {
           }
         }
       `}</style>
-      <ErrorModal
-        isOpen={!!authError}
-        message={authError || ''}
-        onClose={() => setAuthError(null)}
-      />
     </div>
   );
 };
