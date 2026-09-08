@@ -38,7 +38,7 @@ interface LangGraphContextType {
 const LangGraphContext = createContext<LangGraphContextType | undefined>(undefined);
 
 export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [currentThreadId, setCurrentThreadId] = useState<string | null>(null);
@@ -67,7 +67,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     const initThreads = async () => {
-      if (isAuthenticated && token) {
+      if (isAuthenticated) {
         const loadedThreads = await getThreads();
         setThreads(loadedThreads || []);
         setCurrentThreadId(null);
@@ -75,7 +75,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
     };
     initThreads();
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated]);
 
   const createNewThread = async (): Promise<string | null> => {
     try {

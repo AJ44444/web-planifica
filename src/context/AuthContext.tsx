@@ -4,7 +4,6 @@ import { loginToServer, refreshServerSession, logoutFromServer } from '../servic
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   loginWithToken: (idToken: string) => Promise<void>;
@@ -15,7 +14,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -24,11 +22,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const data = await refreshServerSession();
         if (data && data.user) {
           setUser(data.user);
-          setToken(data.access_token || 'cookie_authenticated');
         }
       } catch {
         setUser(null);
-        setToken(null);
       } finally {
         setIsLoading(false);
       }
@@ -38,7 +34,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const handleUnauthorized = () => {
       setUser(null);
-      setToken(null);
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
@@ -53,11 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await loginToServer(idToken);
       if (data && data.user) {
         setUser(data.user);
-        setToken(data.access_token || 'cookie_authenticated');
       }
     } catch {
       setUser(null);
-      setToken(null);
       throw new Error('No fue posible autenticar con el servidor.');
     } finally {
       setIsLoading(false);
@@ -67,14 +60,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     await logoutFromServer();
     setUser(null);
-    setToken(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        token,
         isAuthenticated: !!user,
         isLoading,
         loginWithToken,
