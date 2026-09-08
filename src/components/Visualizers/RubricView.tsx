@@ -89,7 +89,7 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
       <div className="visualizer-header">
         <div className="title-row">
           <div className="icon-badge">
-            <ClipboardCheck size={20} color="#ffffff" />
+            <ClipboardCheck size={20} color="#1d4ed8" />
           </div>
           <div>
             <h2 className="visualizer-title">Herramientas de evaluación</h2>
@@ -176,11 +176,12 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
           width: 42px;
           height: 42px;
           border-radius: 0.65rem;
-          background: linear-gradient(135deg, #1d4ed8, #2563eb);
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
         }
 
         .visualizer-title {

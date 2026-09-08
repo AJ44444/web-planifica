@@ -324,11 +324,12 @@ h4 { font-size: 1rem; line-height: 1.5rem; }
   width: 42px;
   height: 42px;
   border-radius: 0.65rem;
-  background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
   flex-shrink: 0;
 }
 

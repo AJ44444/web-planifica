@@ -91,9 +91,9 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
             <table className="plans-table">
               <thead>
                 <tr>
-                  <th>Materia / Subárea</th>
+                  <th>Materia</th>
                   <th>Grado & Sección</th>
-                  <th>Fecha de Creación (GMT-6)</th>
+                  <th>Fecha de Creación</th>
                   <th>Estado</th>
                   <th className="text-right">Acciones</th>
                 </tr>
@@ -107,7 +107,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
                     <td>
                       <span className="grade-badge">
                         {plan.encabezado?.grado || 'General'}{' '}
-                        {plan.encabezado?.seccion ? `- Sec. ${plan.encabezado.seccion}` : ''}
+                        {plan.encabezado?.seccion ? `- ${plan.encabezado.seccion}` : ''}
                       </span>
                     </td>
                     <td className="date-cell">
@@ -299,14 +299,19 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
         }
 
         .grade-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 0.25rem 0.6rem;
+          display: inline-block;
+          padding: 0.3rem 0.65rem;
           border-radius: 0.375rem;
           background: #f1f5f9;
           color: #334155;
           font-size: 0.8rem;
           font-weight: 500;
+          white-space: normal;
+          word-break: break-word;
+          overflow-wrap: anywhere;
+          max-width: 240px;
+          line-height: 1.45;
+          text-align: left;
         }
 
         .date-cell {
