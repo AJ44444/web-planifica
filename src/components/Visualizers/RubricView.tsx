@@ -92,7 +92,7 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
             <ClipboardCheck size={20} color="#1d4ed8" />
           </div>
           <div>
-            <h2 className="visualizer-title">Herramientas de evaluación</h2>
+            <h2 className="visualizer-title">Herramientas de Evaluación</h2>
             <p className="visualizer-subtitle">
               Visualización estructurada de las herramientas de evaluación para las actividades de aprendizaje
             </p>

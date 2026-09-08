@@ -96,7 +96,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
     );
   }
 
-  const { encabezado, desarrollo_curricular } = data;
+  const { metadatos, encabezado, desarrollo_curricular } = data;
 
   const handleNodeClick = (filaId: number, indicatorIdx: number, contentIdx?: number) => {
     if (
@@ -149,12 +149,12 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
         </div>
         <div className="meta-card">
           <span className="meta-label"><GraduationCap size={12} /> Carrera</span>
-          <span className="meta-value">{encabezado?.carrera}</span>
+          <span className="meta-value">{metadatos?.carrera}</span>
         </div>
 
         <div className="meta-card">
           <span className="meta-label"><BookOpen size={12} /> Curso</span>
-          <span className="meta-value">{encabezado?.curso || (encabezado as any)?.subarea}</span>
+          <span className="meta-value">{metadatos?.subarea_curricular}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><Award size={12} /> Grado</span>
