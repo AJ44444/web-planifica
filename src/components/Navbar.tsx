@@ -411,7 +411,7 @@ export const Navbar: React.FC = () => {
             display: none !important;
           }
 
-          .brand-title, .brand-subtitle {
+          .brand-logo {
             display: none !important;
           }
 
