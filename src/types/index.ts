@@ -160,7 +160,6 @@ export interface LangGraphContextType {
   resetChatToHero: () => void;
   checkHealth: () => Promise<void>;
   showErrorNotification: (msg: string) => void;
-  clearErrorNotification: () => void;
 }
 
 export interface AgentStatusPanelProps {

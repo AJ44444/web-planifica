@@ -31,8 +31,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     window.alert(msg);
   };
 
-  const clearErrorNotification = () => {};
-
   const checkHealth = async () => {
     const isOk = await checkServerHealth();
     setIsServerOnline(isOk);
@@ -209,7 +207,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         resetChatToHero,
         checkHealth,
         showErrorNotification,
-        clearErrorNotification,
       }}
     >
       {children}

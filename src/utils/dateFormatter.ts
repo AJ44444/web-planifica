@@ -1,14 +1,14 @@
+function parseDate(dateInput?: number | string | Date): { date: Date | null; raw: string } {
+  if (!dateInput) return { date: null, raw: '' };
+  const date = typeof dateInput === 'number'
+    ? (dateInput < 1e11 ? new Date(dateInput * 1000) : new Date(dateInput))
+    : new Date(dateInput);
+  return isNaN(date.getTime()) ? { date: null, raw: String(dateInput) } : { date, raw: '' };
+}
+
 export function formatGMT6Date(dateInput?: number | string | Date): string {
-  if (!dateInput) return '';
-
-  let date: Date;
-  if (typeof dateInput === 'number') {
-    date = dateInput < 1e11 ? new Date(dateInput * 1000) : new Date(dateInput);
-  } else {
-    date = new Date(dateInput);
-  }
-
-  if (isNaN(date.getTime())) return String(dateInput);
+  const { date, raw } = parseDate(dateInput);
+  if (!date) return raw;
 
   return new Intl.DateTimeFormat('es-GT', {
     timeZone: 'America/Guatemala',
@@ -23,16 +23,8 @@ export function formatGMT6Date(dateInput?: number | string | Date): string {
 }
 
 export function formatGMT6Time(dateInput?: number | string | Date): string {
-  if (!dateInput) return '';
-
-  let date: Date;
-  if (typeof dateInput === 'number') {
-    date = dateInput < 1e11 ? new Date(dateInput * 1000) : new Date(dateInput);
-  } else {
-    date = new Date(dateInput);
-  }
-
-  if (isNaN(date.getTime())) return String(dateInput);
+  const { date, raw } = parseDate(dateInput);
+  if (!date) return raw;
 
   return new Intl.DateTimeFormat('es-GT', {
     timeZone: 'America/Guatemala',
