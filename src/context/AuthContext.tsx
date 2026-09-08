@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../types';
-import { loginToServer, refreshServerSession, logoutFromServer } from '../services/api';
+import { loginToServer, verifyServerSession, logoutFromServer } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -19,9 +19,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const initAuthSession = async () => {
       try {
-        const data = await refreshServerSession();
+        const data = await verifyServerSession();
         if (data && data.user) {
           setUser(data.user);
+        } else {
+          setUser(null);
         }
       } catch {
         setUser(null);

@@ -50,6 +50,36 @@ export async function loginToServer(idToken: string): Promise<any> {
   return await response.json();
 }
 
+export async function verifyServerSession(): Promise<any> {
+  let response = await fetch(`${API_BASE_URL}/auth/verify`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (response.status === 401) {
+    try {
+      const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (refreshRes.ok) {
+        response = await fetch(`${API_BASE_URL}/auth/verify`, {
+          method: 'GET',
+          credentials: 'include',
+        });
+      }
+    } catch {
+      // Handled below
+    }
+  }
+
+  if (!response.ok) {
+    throw new Error('Sesión no válida o expirada');
+  }
+
+  return await response.json();
+}
+
 export async function refreshServerSession(): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
     method: 'POST',
