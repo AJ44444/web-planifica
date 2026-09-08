@@ -183,6 +183,10 @@ export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, o
           font-weight: 600;
         }
 
+        .agent-sidebar.collapsed .sidebar-title {
+          display: none !important;
+        }
+
         .agent-sidebar.collapsed .nav-label {
           display: none;
         }
@@ -195,22 +199,7 @@ export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, o
         /* Responsive Breakpoint: Mobile & Tablet */
         @media (max-width: 900px) {
           .agent-sidebar {
-            width: 64px;
-            min-width: 64px;
-            padding: 1rem 0.4rem;
-          }
-
-          .agent-sidebar:not(.expanded-mobile) .nav-label {
-            display: none;
-          }
-
-          .agent-sidebar:not(.expanded-mobile) .nav-item {
-            justify-content: center;
-            padding: 0.65rem 0.25rem;
-          }
-
-          .agent-sidebar:not(.expanded-mobile) .sidebar-header {
-            justify-content: center;
+            display: none !important;
           }
         }
       `}</style>

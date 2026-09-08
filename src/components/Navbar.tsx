@@ -1,15 +1,53 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLangGraph } from '../context/LangGraphContext';
-import { BookOpen, Plus, LogOut, CheckCircle2, AlertCircle } from 'lucide-react';
+import { 
+  BookOpen, 
+  Plus, 
+  LogOut, 
+  CheckCircle2, 
+  AlertCircle, 
+  Menu, 
+  X,
+  MessageSquare,
+  Layers,
+  ClipboardCheck,
+  Video,
+  History
+} from 'lucide-react';
+import type { ViewTabType } from '../types';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
-  const { isServerOnline, threads, currentThreadId, selectThread, createNewThread } = useLangGraph();
+  const { 
+    isServerOnline, 
+    threads, 
+    currentThreadId, 
+    selectThread, 
+    createNewThread,
+    activeViewTab,
+    setActiveViewTab
+  } = useLangGraph();
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  const handleSelectTab = (tab: ViewTabType) => {
+    setActiveViewTab(tab);
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <header className="navbar">
       <div className="navbar-left">
+        <button
+          type="button"
+          className="btn-hamburger-menu"
+          onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+          title={isMobileMenuOpen ? 'Cerrar menú' : 'Desplegar menú'}
+        >
+          {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
         <div className="brand-logo">
           <div className="logo-icon">
             <BookOpen size={24} color="#ffffff" />
@@ -71,6 +109,55 @@ export const Navbar: React.FC = () => {
         )}
       </div>
 
+      {isMobileMenuOpen && (
+        <div className="mobile-menu-drawer">
+          <nav className="mobile-nav-list">
+            <button
+              className={`mobile-nav-item ${activeViewTab === 'chat' ? 'active' : ''}`}
+              onClick={() => handleSelectTab('chat')}
+            >
+              <MessageSquare size={18} />
+              <span>Chat</span>
+            </button>
+            <button
+              className={`mobile-nav-item ${activeViewTab === 'planifications' ? 'active' : ''}`}
+              onClick={() => handleSelectTab('planifications')}
+            >
+              <Layers size={18} />
+              <span>Planificaciones</span>
+            </button>
+            <button
+              className={`mobile-nav-item ${activeViewTab === 'plan' ? 'active' : ''}`}
+              onClick={() => handleSelectTab('plan')}
+            >
+              <BookOpen size={18} />
+              <span>Visualizador de Plan</span>
+            </button>
+            <button
+              className={`mobile-nav-item ${activeViewTab === 'rubric' ? 'active' : ''}`}
+              onClick={() => handleSelectTab('rubric')}
+            >
+              <ClipboardCheck size={18} />
+              <span>Rúbricas & Cotejo</span>
+            </button>
+            <button
+              className={`mobile-nav-item ${activeViewTab === 'multimodal' ? 'active' : ''}`}
+              onClick={() => handleSelectTab('multimodal')}
+            >
+              <Video size={18} />
+              <span>Recursos Multimodales</span>
+            </button>
+            <button
+              className={`mobile-nav-item ${activeViewTab === 'history' ? 'active' : ''}`}
+              onClick={() => handleSelectTab('history')}
+            >
+              <History size={18} />
+              <span>Historial</span>
+            </button>
+          </nav>
+        </div>
+      )}
+
       <style>{`
         .navbar {
           height: 68px;
@@ -81,8 +168,7 @@ export const Navbar: React.FC = () => {
           justify-content: space-between;
           padding: 0 1.5rem;
           box-shadow: 0 2px 10px rgba(29, 78, 216, 0.04);
-          position: sticky;
-          top: 0;
+          position: relative;
           z-index: 40;
         }
 
@@ -90,6 +176,79 @@ export const Navbar: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 1rem;
+        }
+
+        .btn-hamburger-menu {
+          display: none;
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          color: #1e293b;
+          border-radius: 0.5rem;
+          padding: 0.4rem;
+          cursor: pointer;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+
+        .btn-hamburger-menu:hover {
+          background: #eff6ff;
+          color: #1d4ed8;
+          border-color: #bfdbfe;
+        }
+
+        .mobile-menu-drawer {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: #ffffff;
+          border-bottom: 1px solid #cbd5e1;
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+          z-index: 99;
+          padding: 0.75rem 1rem;
+          animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .mobile-nav-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+
+        .mobile-nav-item {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.65rem 0.85rem;
+          border-radius: 0.5rem;
+          border: 1px solid transparent;
+          background: transparent;
+          color: #475569;
+          font-size: 0.9rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: left;
+          width: 100%;
+        }
+
+        .mobile-nav-item:hover {
+          background: #f8fafc;
+          color: #1d4ed8;
+        }
+
+        .mobile-nav-item.active {
+          background: #eff6ff;
+          color: #1d4ed8;
+          border-color: #bfdbfe;
+          font-weight: 600;
         }
 
         .brand-logo {
@@ -238,6 +397,10 @@ export const Navbar: React.FC = () => {
             min-height: 56px;
             padding: 0.5rem 0.75rem;
             gap: 0.4rem;
+          }
+
+          .btn-hamburger-menu {
+            display: inline-flex !important;
           }
 
           .navbar-left, .navbar-right {
