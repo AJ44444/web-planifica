@@ -54,7 +54,6 @@ export const Navbar: React.FC = () => {
           </div>
           <div className="logo-text">
             <span className="brand-title">Planifica</span>
-            <span className="brand-subtitle">IA EDUCATIVA</span>
           </div>
         </div>
 
@@ -131,14 +130,14 @@ export const Navbar: React.FC = () => {
               onClick={() => handleSelectTab('plan')}
             >
               <BookOpen size={18} />
-              <span>Visualizador de Plan</span>
+              <span>Planificación</span>
             </button>
             <button
               className={`mobile-nav-item ${activeViewTab === 'rubric' ? 'active' : ''}`}
               onClick={() => handleSelectTab('rubric')}
             >
               <ClipboardCheck size={18} />
-              <span>Rúbricas & Cotejo</span>
+              <span>Herramientas de Evaluación</span>
             </button>
             <button
               className={`mobile-nav-item ${activeViewTab === 'multimodal' ? 'active' : ''}`}
@@ -280,13 +279,6 @@ export const Navbar: React.FC = () => {
           color: #1d4ed8;
           line-height: 1.1;
           letter-spacing: -0.02em;
-        }
-
-        .brand-subtitle {
-          font-size: 0.65rem;
-          font-weight: 700;
-          color: #64748b;
-          letter-spacing: 0.1em;
         }
 
         .server-status {

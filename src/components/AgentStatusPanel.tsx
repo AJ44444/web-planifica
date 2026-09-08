@@ -52,18 +52,18 @@ export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, o
         <button
           className={`nav-item ${activeTab === 'plan' ? 'active' : ''}`}
           onClick={() => onSelectTab('plan')}
-          title="Visualizador de Plan"
+          title="Planificación"
         >
           <BookOpen size={18} />
-          <span className="nav-label">Visualizador de Plan</span>
+          <span className="nav-label">Planificación</span>
         </button>
         <button
           className={`nav-item ${activeTab === 'rubric' ? 'active' : ''}`}
           onClick={() => onSelectTab('rubric')}
-          title="Rúbricas & Cotejo"
+          title="Herramientas de Evaluación"
         >
           <ClipboardCheck size={18} />
-          <span className="nav-label">Rúbricas & Cotejo</span>
+          <span className="nav-label">Herramientas de Evaluación</span>
         </button>
         <button
           className={`nav-item ${activeTab === 'multimodal' ? 'active' : ''}`}

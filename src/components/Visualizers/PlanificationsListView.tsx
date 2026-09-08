@@ -55,12 +55,14 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
 
   return (
     <div className="planifications-list-wrapper">
-      <header className="view-header">
-        <div className="title-box">
-          <Layers className="header-icon" size={24} />
+      <div className="visualizer-header">
+        <div className="title-row">
+          <div className="icon-badge">
+            <Layers size={20} color="#1d4ed8" />
+          </div>
           <div>
-            <h2>Historial de Planificaciones</h2>
-            <p className="subtitle">Consulta tus secuencias didácticas registradas y póbllalas en los visualizadores</p>
+            <h2 className="visualizer-title">Historial de Planificaciones</h2>
+            <p className="visualizer-subtitle">Consulta tus secuencias didácticas registradas</p>
           </div>
         </div>
         <button
@@ -72,7 +74,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
           <RefreshCw size={16} className={isLoading ? 'spin' : ''} />
           <span>Actualizar</span>
         </button>
-      </header>
+      </div>
 
       {isLoading ? (
         <div className="loading-state">
@@ -182,38 +184,43 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
-        .view-header {
+        .visualizer-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          border-bottom: 1px solid #e2e8f0;
           padding-bottom: 1rem;
-          border-bottom: 1px solid #f1f5f9;
         }
 
-        .title-box {
+        .title-row {
           display: flex;
           align-items: center;
           gap: 0.85rem;
         }
 
-        .header-icon {
-          color: #1d4ed8;
-          background: #eff6ff;
-          padding: 0.4rem;
-          border-radius: 0.5rem;
-          width: 36px;
-          height: 36px;
+        .icon-badge {
+          width: 42px;
+          height: 42px;
+          border-radius: 0.65rem;
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+          flex-shrink: 0;
         }
 
-        .view-header h2 {
+        .visualizer-title {
+          font-family: var(--font-heading);
           font-size: 1.25rem;
           font-weight: 700;
           color: #0f172a;
           margin: 0;
         }
 
-        .subtitle {
-          font-size: 0.875rem;
+        .visualizer-subtitle {
+          font-size: 0.85rem;
           color: #64748b;
           margin: 0.15rem 0 0 0;
         }

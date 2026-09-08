@@ -13,7 +13,7 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
             <Video size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No hay recursos multimodales cargados o la planificación no contiene recursos digitales, videos ni documentos sugeridos.
+            No hay recursos multimodales cargados.
           </h2>
           <p className="empty-visualizer-subtitle">
             Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".

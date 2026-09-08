@@ -36,7 +36,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
             <BookOpen size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No hay ninguna planificación cargada en los visualizadores
+            No hay ninguna planificación cargada
           </h2>
           <p className="empty-visualizer-subtitle">
             Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".
@@ -118,7 +118,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
             <BookOpen size={20} color="#1d4ed8" />
           </div>
           <div>
-            <h2 className="visualizer-title">Planificación Didáctica</h2>
+            <h2 className="visualizer-title">Planificación de Aprendizajes</h2>
             <p className="visualizer-subtitle">
               Visualización estructurada de la secuencia didáctica
             </p>

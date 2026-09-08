@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardCheck, Award } from 'lucide-react';
+import { ClipboardCheck } from 'lucide-react';
 import type { InstrumentoEvaluacion, CriterioEvaluacion, VisualizadoresData } from '../../types';
 
 const cleanScaleLabel = (label: string): string => {
@@ -23,7 +23,7 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
             <ClipboardCheck size={44} color="#ffffff" />
           </div>
           <h2 className="empty-visualizer-title">
-            No hay herramientas de evaluación cargadas o la planificación no contiene rúbricas analíticas ni listas de cotejo.
+            No hay herramientas de evaluación cargadas.
           </h2>
           <p className="empty-visualizer-subtitle">
             Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".
@@ -107,7 +107,6 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
         return (
           <div key={tIdx} className="rubric-section" style={{ marginBottom: tIdx < tools.length - 1 ? '1.75rem' : '0' }}>
             <h3 className="section-title">
-              <Award size={16} color="#1d4ed8" />
               <span>{tool.titulo}</span>
             </h3>
 
