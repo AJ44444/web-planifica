@@ -8,7 +8,7 @@ export interface User {
 export interface MetadatosPlan {
   carrera?: string;
   subarea_curricular?: string;
-  fecha_creacion?: number | string;
+  fecha_creacion?: string;
   estado?: string;
   id_usuario?: string;
 }
