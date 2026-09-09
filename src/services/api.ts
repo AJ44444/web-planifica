@@ -3,38 +3,6 @@ import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
-export async function fetchWithAutoRefresh(url: string, options: RequestInit = {}): Promise<Response> {
-  const reqOptions: RequestInit = {
-    ...options,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  };
-
-  let response = await fetch(url, reqOptions);
-
-  if (response.status === 401 && !url.includes('/auth/')) {
-    try {
-      const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (refreshRes.ok) {
-        response = await fetch(url, reqOptions);
-      } else {
-        window.dispatchEvent(new Event('auth:unauthorized'));
-      }
-    } catch {
-      window.dispatchEvent(new Event('auth:unauthorized'));
-    }
-  }
-
-  return response;
-}
-
 export async function loginToServer(idToken: string): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -45,36 +13,6 @@ export async function loginToServer(idToken: string): Promise<any> {
 
   if (!response.ok) {
     throw new Error('Fallo la autenticación con el servidor');
-  }
-
-  return await response.json();
-}
-
-export async function verifyServerSession(): Promise<any> {
-  let response = await fetch(`${API_BASE_URL}/auth/verify`, {
-    method: 'GET',
-    credentials: 'include',
-  });
-
-  if (response.status === 401) {
-    try {
-      const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (refreshRes.ok) {
-        response = await fetch(`${API_BASE_URL}/auth/verify`, {
-          method: 'GET',
-          credentials: 'include',
-        });
-      }
-    } catch {
-      // Handled below
-    }
-  }
-
-  if (!response.ok) {
-    throw new Error('Sesión no válida o expirada');
   }
 
   return await response.json();
@@ -91,6 +29,29 @@ export async function refreshServerSession(): Promise<any> {
   }
 
   return await response.json();
+}
+
+export async function verifyServerSession(): Promise<any> {
+  const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (response.ok) {
+    return await response.json();
+  }
+
+  if (response.status === 401) {
+    try {
+      return await refreshServerSession();
+    } catch {
+      window.dispatchEvent(new Event('auth:unauthorized'));
+      throw new Error('Sesión expirada. Por favor inicie sesión de nuevo.');
+    }
+  }
+
+  window.dispatchEvent(new Event('auth:unauthorized'));
+  throw new Error('Sesión no válida o expirada');
 }
 
 export async function logoutFromServer(): Promise<boolean> {
@@ -117,8 +78,12 @@ export async function checkServerHealth(): Promise<boolean> {
 }
 
 export async function createThread(): Promise<string> {
-  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads`, {
+  await verifyServerSession();
+
+  const response = await fetch(`${API_BASE_URL}/threads`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({}),
   });
 
@@ -135,8 +100,12 @@ export async function createThread(): Promise<string> {
 }
 
 export async function getThreads(): Promise<Thread[]> {
-  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/search`, {
+  await verifyServerSession();
+
+  const response = await fetch(`${API_BASE_URL}/threads/search`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ limit: 100, metadata: {} }),
   });
 
@@ -159,8 +128,11 @@ export async function getThreads(): Promise<Thread[]> {
 
 export async function deleteThread(threadId: string): Promise<boolean> {
   try {
-    const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/${threadId}`, {
+    await verifyServerSession();
+
+    const response = await fetch(`${API_BASE_URL}/threads/${threadId}`, {
       method: 'DELETE',
+      credentials: 'include',
     });
     return response.ok;
   } catch {
@@ -170,8 +142,11 @@ export async function deleteThread(threadId: string): Promise<boolean> {
 
 export async function getThreadHistory(threadId: string): Promise<ChatMessage[]> {
   try {
-    const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/${threadId}/history`, {
+    await verifyServerSession();
+
+    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/history`, {
       method: 'GET',
+      credentials: 'include',
     });
     if (response.ok) {
       const data = await response.json();
@@ -221,8 +196,12 @@ export async function streamLangGraphRun(
   let fullContent = '';
 
   try {
-    const response = await fetchWithAutoRefresh(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
+    await verifyServerSession();
+
+    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         assistant_id: 'supervisor',
         input: {
@@ -310,8 +289,11 @@ export async function streamLangGraphRun(
 }
 
 export async function getLessonPlans(page: number = 1, limit: number = 10): Promise<any> {
-  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/api/lesson-plans?page=${page}&limit=${limit}`, {
+  await verifyServerSession();
+
+  const response = await fetch(`${API_BASE_URL}/api/lesson-plans?page=${page}&limit=${limit}`, {
     method: 'GET',
+    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -322,8 +304,11 @@ export async function getLessonPlans(page: number = 1, limit: number = 10): Prom
 }
 
 export async function getLessonPlanDetail(id: string): Promise<any> {
-  const response = await fetchWithAutoRefresh(`${API_BASE_URL}/api/lesson-plans/${id}`, {
+  await verifyServerSession();
+
+  const response = await fetch(`${API_BASE_URL}/api/lesson-plans/${id}`, {
     method: 'GET',
+    credentials: 'include',
   });
 
   if (!response.ok) {
