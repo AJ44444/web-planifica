@@ -56,11 +56,9 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     try {
       const newId = await createThread();
       if (!newId) {
-        setIsServerOnline(false);
         showErrorNotification('Falló la conexión con el servidor. No fue posible crear la conversación.');
         return null;
       }
-      setIsServerOnline(true);
       const newThread: Thread = {
         id: newId,
         title: `Conversación ${threads.length + 1}`,
@@ -72,7 +70,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setMessages([]);
       return newId;
     } catch {
-      setIsServerOnline(false);
       showErrorNotification('Falló la conexión con el servidor. El servidor no se encuentra disponible.');
       return null;
     }
@@ -125,7 +122,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
 
     if (!activeThreadId) {
-      setIsServerOnline(false);
       showErrorNotification('Falló la conexión con el servidor. El servidor no se encuentra disponible.');
       return;
     }
@@ -152,7 +148,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     await streamLangGraphRun(activeThreadId, text, {
       onToken: (chunk) => {
-        setIsServerOnline(true);
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === streamMsgId ? { ...msg, content: msg.content + chunk } : msg
@@ -160,7 +155,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         );
       },
       onComplete: (finalMessage) => {
-        setIsServerOnline(true);
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === streamMsgId ? { ...finalMessage, id: streamMsgId } : msg
@@ -169,7 +163,6 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setIsStreaming(false);
       },
       onError: () => {
-        setIsServerOnline(false);
         setMessages((prev) =>
           prev.map((msg) => {
             if (msg.id === streamMsgId) {
