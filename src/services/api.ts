@@ -19,16 +19,21 @@ export async function loginToServer(idToken: string): Promise<any> {
 }
 
 export async function refreshServerSession(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    credentials: 'include',
-  });
+  window.dispatchEvent(new Event('auth:refresh-start'));
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+    });
 
-  if (!response.ok) {
-    throw new Error('Sesión expirada');
+    if (!response.ok) {
+      throw new Error('Sesión expirada');
+    }
+
+    return await response.json();
+  } finally {
+    window.dispatchEvent(new Event('auth:refresh-end'));
   }
-
-  return await response.json();
 }
 
 export async function verifyServerSession(): Promise<any> {

@@ -7,6 +7,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
   useEffect(() => {
     const initAuthSession = async () => {
@@ -30,15 +31,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
     };
 
+    const handleRefreshStart = () => {
+      setIsRefreshing(true);
+    };
+
+    const handleRefreshEnd = () => {
+      setIsRefreshing(false);
+    };
+
     window.addEventListener('auth:unauthorized', handleUnauthorized);
+    window.addEventListener('auth:refresh-start', handleRefreshStart);
+    window.addEventListener('auth:refresh-end', handleRefreshEnd);
+
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('auth:refresh-start', handleRefreshStart);
+      window.removeEventListener('auth:refresh-end', handleRefreshEnd);
     };
   }, []);
 
   const loginWithToken = async (idToken: string) => {
     try {
-      setIsLoading(true);
       const data = await loginToServer(idToken);
       if (data && data.user) {
         setUser(data.user);
@@ -46,8 +59,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       setUser(null);
       throw new Error('No fue posible autenticar con el servidor.');
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -62,6 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         isAuthenticated: !!user,
         isLoading,
+        isRefreshing,
         loginWithToken,
         logout,
       }}
