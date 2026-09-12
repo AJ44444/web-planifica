@@ -18,40 +18,18 @@ export async function loginToServer(idToken: string): Promise<any> {
   return await response.json();
 }
 
-export async function refreshServerSession(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-    method: 'POST',
-    credentials: 'include',
-  });
-
-  if (!response.ok) {
-    throw new Error('Sesión expirada');
-  }
-
-  return await response.json();
-}
-
 export async function verifyServerSession(): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/verify`, {
     method: 'GET',
     credentials: 'include',
   });
 
-  if (response.ok) {
-    return await response.json();
+  if (!response.ok) {
+    window.dispatchEvent(new Event('auth:unauthorized'));
+    throw new Error('Sesión no válida o expirada');
   }
 
-  if (response.status === 401) {
-    try {
-      return await refreshServerSession();
-    } catch {
-      window.dispatchEvent(new Event('auth:unauthorized'));
-      throw new Error('Sesión expirada. Por favor inicie sesión de nuevo.');
-    }
-  }
-
-  window.dispatchEvent(new Event('auth:unauthorized'));
-  throw new Error('Sesión no válida o expirada');
+  return await response.json();
 }
 
 export async function logoutFromServer(): Promise<boolean> {

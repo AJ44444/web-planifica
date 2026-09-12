@@ -61,71 +61,7 @@ const MainWorkspaceContent: React.FC = () => {
   }, [messages]);
 
   if (isLoading) {
-    return (
-      <div className="initial-loading-container">
-        <div className="loading-toast">
-          <div className="toast-spinner" />
-          <div className="toast-content">
-            <span className="toast-title">Validando sesión...</span>
-            <span className="toast-subtitle">Por favor espera un momento</span>
-          </div>
-        </div>
-        <style>{`
-          .initial-loading-container {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #f8fafc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            font-family: var(--font-body, system-ui, -apple-system, sans-serif);
-          }
-
-          .loading-toast {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            padding: 0.85rem 1.35rem;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
-          }
-
-          .toast-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2.5px solid #dbeafe;
-            border-top-color: #2563eb;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-          }
-
-          .toast-content {
-            display: flex;
-            flex-direction: column;
-          }
-
-          .toast-title {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #0f172a;
-          }
-
-          .toast-subtitle {
-            font-size: 0.75rem;
-            color: #64748b;
-          }
-
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
-      </div>
-    );
+    return null;
   }
 
   if (!isAuthenticated) {
