@@ -145,7 +145,6 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
 
               <div className="card-content">
                 <h4 className="card-title">{res.titulo}</h4>
-                <p className="card-desc">{res.descripcion_recurso}</p>
 
                 <div className="card-footer">
                   <span className="meta-tag">Formato: {res.tipo}</span>

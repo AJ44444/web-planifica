@@ -13,7 +13,7 @@ import {
   convertInchesToTwip,
   convertMillimetersToTwip,
 } from 'docx';
-import type { VisualizadoresData } from '../types';
+import type { VisualizadoresData, InstrumentoEvaluacion, CriterioEvaluacion } from '../types';
 
 function saveDocument(blob: Blob, fileName: string) {
   const url = window.URL.createObjectURL(blob);
@@ -36,8 +36,8 @@ export async function exportToWord(
   onErrorNotification?: (msg: string) => void
 ): Promise<void> {
   const planData = data?.plan;
-  const rubricData = data?.rubrics?.[0] || null;
-  const multimodalData = data?.multimodals || null;
+  const rubricsData = data?.rubrics || [];
+  const multimodalData = data?.multimodals || [];
 
   if (!planData || !planData.encabezado) {
     if (onErrorNotification) onErrorNotification('Datos de planificación incompletos.');
@@ -45,6 +45,7 @@ export async function exportToWord(
   }
 
   const enc = planData.encabezado;
+  const meta = planData.metadatos;
   const filas = planData.desarrollo_curricular || [];
 
   try {
@@ -86,7 +87,7 @@ export async function exportToWord(
       );
     }
 
-    const carreraText = (enc.carrera || '').trim();
+    const carreraText = (meta?.carrera || '').trim();
     if (carreraText) {
       headingParagraphs.push(
         new Paragraph({
@@ -105,6 +106,7 @@ export async function exportToWord(
     }
 
     const gradoSeccionText = [enc.grado || '', enc.seccion || ''].filter(Boolean).join(' ');
+    const cursoSubareaText = meta?.subarea_curricular || enc.curso || '';
 
     const table1 = new Table({
       width: { size: 100, type: WidthType.PERCENTAGE },
@@ -143,7 +145,7 @@ export async function exportToWord(
               width: { size: 75, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
-                  children: [new TextRun({ text: enc.curso || '', font: 'Arial', size: 22 })],
+                  children: [new TextRun({ text: cursoSubareaText, font: 'Arial', size: 22 })],
                 }),
               ],
             }),
@@ -345,76 +347,111 @@ export async function exportToWord(
       table2,
     ];
 
-    const planTools: any[] = rubricData?.herramientas && rubricData.herramientas.length > 0
-      ? rubricData.herramientas
-      : (rubricData?.instrumento_generado?.criterios ? [{
-          tipo: rubricData.tipo || '',
-          titulo: rubricData.titulo || '',
-          escala: rubricData.instrumento_generado.escala || [],
-          criterios: rubricData.instrumento_generado.criterios || []
-        }] : (rubricData ? [rubricData] : []));
+    const validTools: InstrumentoEvaluacion[] = Array.isArray(rubricsData)
+      ? rubricsData.filter(
+          (inst) =>
+            inst &&
+            inst.instrumento_generado &&
+            Array.isArray(inst.instrumento_generado.criterios) &&
+            inst.instrumento_generado.criterios.length > 0
+        )
+      : [];
 
-    if (planTools && planTools.length > 0) {
-      const validTools = planTools.filter((t: any) => {
-        const crits = t?.criterios || t?.instrumento_generado?.criterios;
-        return crits && Array.isArray(crits) && crits.length > 0;
-      });
+    if (validTools.length > 0) {
+      docChildren.push(
+        new Paragraph({
+          pageBreakBefore: true,
+          alignment: AlignmentType.CENTER,
+          spacing: { before: 240, after: 120 },
+          children: [
+            new TextRun({
+              text: 'INSTRUMENTOS DE EVALUACIÓN',
+              bold: true,
+              size: 28,
+              font: 'Arial',
+              color: '000000',
+            }),
+          ],
+        })
+      );
 
-      if (validTools.length > 0) {
+      validTools.forEach((inst, idx) => {
+        const tituloTool = (inst.titulo || '').trim();
+        const fallbackType = inst.tipo ? inst.tipo.toUpperCase().replace('_', ' ') : '';
+        const headerLabel = tituloTool || fallbackType;
+
         docChildren.push(
           new Paragraph({
-            pageBreakBefore: true,
-            alignment: AlignmentType.CENTER,
-            spacing: { before: 240, after: 120 },
+            heading: HeadingLevel.HEADING_3,
+            spacing: { before: 160, after: 80 },
             children: [
               new TextRun({
-                text: 'INSTRUMENTOS DE EVALUACIÓN',
+                text: `${idx + 1}. ${headerLabel}`,
                 bold: true,
-                size: 28,
+                size: 22,
                 font: 'Arial',
-                color: '000000',
               }),
             ],
           })
         );
 
-        validTools.forEach((inst: any, idx: number) => {
-          const tituloTool = (inst.titulo || '').trim();
-          const fallbackType = inst.tipo ? (inst.tipo).toUpperCase() : '';
-          const headerLabel = tituloTool || fallbackType;
+        const scale: string[] = inst.instrumento_generado?.escala || [];
+        const criterios: CriterioEvaluacion[] = inst.instrumento_generado?.criterios || [];
 
-          docChildren.push(
-            new Paragraph({
-              heading: HeadingLevel.HEADING_3,
-              spacing: { before: 160, after: 80 },
-              children: [
-                new TextRun({
-                  text: `${idx + 1}. ${headerLabel}`,
-                  bold: true,
-                  size: 22,
-                  font: 'Arial',
-                }),
-              ],
-            })
-          );
+        const tableHeaders = [
+          new TableCell({
+            width: { size: 35, type: WidthType.PERCENTAGE },
+            children: [
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: 'Criterio de Evaluación',
+                    bold: true,
+                    font: 'Arial',
+                    size: 20,
+                  }),
+                ],
+              }),
+            ],
+          }),
+          ...scale.map(
+            (esc: string) =>
+              new TableCell({
+                width: {
+                  size: 65 / (scale.length || 1),
+                  type: WidthType.PERCENTAGE,
+                },
+                children: [
+                  new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [
+                      new TextRun({
+                        text: esc || '',
+                        bold: true,
+                        font: 'Arial',
+                        size: 20,
+                      }),
+                    ],
+                  }),
+                ],
+              })
+          ),
+        ];
 
-          const scale: string[] = (Array.isArray(inst.escala) && inst.escala.length > 0)
-            ? inst.escala
-            : (inst.instrumento_generado?.escala || []);
+        const tableRows = [new TableRow({ children: tableHeaders })];
 
-          const criterios: any[] = Array.isArray(inst.criterios)
-            ? inst.criterios
-            : (inst.instrumento_generado?.criterios || []);
+        criterios.forEach((crit) => {
+          const critName = crit.nombre || '';
+          const defs = crit.definiciones || [];
 
-          const tableHeaders = [
+          const cells = [
             new TableCell({
-              width: { size: 35, type: WidthType.PERCENTAGE },
               children: [
                 new Paragraph({
                   children: [
                     new TextRun({
-                      text: 'Criterio de Evaluación',
-                      bold: true,
+                      text: critName,
+                      bold: false,
                       font: 'Arial',
                       size: 20,
                     }),
@@ -422,82 +459,36 @@ export async function exportToWord(
                 }),
               ],
             }),
-            ...scale.map(
-              (esc: string) =>
-                new TableCell({
-                  width: {
-                    size: 65 / (scale.length || 1),
-                    type: WidthType.PERCENTAGE,
-                  },
-                  children: [
-                    new Paragraph({
-                      alignment: AlignmentType.CENTER,
-                      children: [
-                        new TextRun({
-                          text: esc || '',
-                          bold: true,
-                          font: 'Arial',
-                          size: 20,
-                        }),
-                      ],
-                    }),
-                  ],
-                })
-            ),
-          ];
-
-          const tableRows = [new TableRow({ children: tableHeaders })];
-
-          criterios.forEach((crit: any) => {
-            const critName = crit.nombre || crit.aspecto_o_criterio || crit.criterio || '';
-            const defs = crit.definiciones || [];
-
-            const cells = [
-              new TableCell({
+            ...scale.map((_: string, eIdx: number) => {
+              const cellContent = defs[eIdx] || '';
+              return new TableCell({
                 children: [
                   new Paragraph({
+                    alignment: AlignmentType.CENTER,
                     children: [
                       new TextRun({
-                        text: critName,
-                        bold: false,
+                        text: cellContent,
                         font: 'Arial',
                         size: 20,
                       }),
                     ],
                   }),
                 ],
-              }),
-              ...scale.map((_: string, eIdx: number) => {
-                const cellContent = defs[eIdx] || '';
-                return new TableCell({
-                  children: [
-                    new Paragraph({
-                      alignment: AlignmentType.CENTER,
-                      children: [
-                        new TextRun({
-                          text: cellContent,
-                          font: 'Arial',
-                          size: 20,
-                        }),
-                      ],
-                    }),
-                  ],
-                });
-              }),
-            ];
-            tableRows.push(new TableRow({ children: cells }));
-          });
-
-          docChildren.push(
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: tableRows,
-            })
-          );
-
-          docChildren.push(new Paragraph({ spacing: { after: 120 } }));
+              });
+            }),
+          ];
+          tableRows.push(new TableRow({ children: cells }));
         });
-      }
+
+        docChildren.push(
+          new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: tableRows,
+          })
+        );
+
+        docChildren.push(new Paragraph({ spacing: { after: 120 } }));
+      });
     }
 
     if (multimodalData && Array.isArray(multimodalData) && multimodalData.length > 0) {
@@ -554,7 +545,7 @@ export async function exportToWord(
       const resourceTableRows = [resourceTableHeaders];
 
       multimodalData.forEach((res) => {
-        const tipoText = res.tipo ? res.tipo.toUpperCase() : '';
+        const tipoText = res.tipo ? res.tipo.toUpperCase().replace('_', ' ') : '';
         const tituloText = res.titulo || '';
         const urlText = formatUrlForWord(res.url || '');
 
@@ -631,7 +622,7 @@ export async function exportToWord(
     });
 
     const blob = await Packer.toBlob(doc);
-    const rawCourseName = enc.curso || enc.carrera || enc.grado || '';
+    const rawCourseName = meta?.subarea_curricular || enc.grado || '';
     const safeCourse = rawCourseName
       .toLowerCase()
       .normalize('NFD')

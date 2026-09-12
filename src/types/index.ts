@@ -10,14 +10,12 @@ export interface MetadatosPlan {
   subarea_curricular?: string;
   fecha_creacion?: string;
   estado?: string;
-  id_usuario?: string;
 }
 
 export interface EncabezadoPlan {
   centro_educativo?: string;
   lugar?: string;
   nombre_docente?: string;
-  carrera?: string;
   curso?: string;
   grado?: string;
   seccion?: string;
@@ -27,7 +25,7 @@ export interface EncabezadoPlan {
 }
 
 export interface ActividadAprendizaje {
-  id_actividad: number;
+  id_actividad: string;
   fase: 'inicio' | 'desarrollo' | 'cierre';
   descripcion: string;
 }
@@ -62,33 +60,18 @@ export interface InstrumentoGeneradoDetail {
   criterios: CriterioEvaluacion[];
 }
 
-export interface EvaluacionToolItem {
-  tipo: 'lista_cotejo' | 'rubrica' | 'escala_rango';
-  titulo: string;
-  escala: string[];
-  criterios: CriterioEvaluacion[];
-}
-
 export interface InstrumentoEvaluacion {
-  id_planificacion?: string;
-  id_fila_curricular?: number;
-  id_actividad?: number;
+  id_actividad?: string;
   tipo: 'lista_cotejo' | 'rubrica' | 'escala_rango';
   titulo: string;
   instrumento_generado: InstrumentoGeneradoDetail;
-  herramientas?: EvaluacionToolItem[];
 }
 
 export interface RecursoMultimodal {
-  id_planificacion?: string;
-  id_fila_curricular?: number;
-  id_actividad?: number;
+  id_actividad?: string;
   tipo: 'video' | 'imagen' | 'audio' | 'documento' | 'sitio_web';
   titulo: string;
   url: string;
-  busqueda_query?: string;
-  descripcion_recurso?: string;
-  descripcion_uso?: string;
 }
 
 export interface ChatMessage {
