@@ -23,7 +23,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
   const data = plan || null;
 
   const [selectedNode, setSelectedNode] = useState<{
-    filaId: number;
+    rowIdx: number;
     indicatorIdx: number;
     contentIdx?: number;
   } | null>(null);
@@ -98,15 +98,15 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
 
   const { metadatos, encabezado, desarrollo_curricular } = data;
 
-  const handleNodeClick = (filaId: number, indicatorIdx: number, contentIdx?: number) => {
+  const handleNodeClick = (rowIdx: number, indicatorIdx: number, contentIdx?: number) => {
     if (
-      selectedNode?.filaId === filaId &&
+      selectedNode?.rowIdx === rowIdx &&
       selectedNode?.indicatorIdx === indicatorIdx &&
       selectedNode?.contentIdx === contentIdx
     ) {
       setSelectedNode(null);
     } else {
-      setSelectedNode({ filaId, indicatorIdx, contentIdx });
+      setSelectedNode({ rowIdx, indicatorIdx, contentIdx });
     }
   };
 
@@ -170,14 +170,13 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
         </div>
       </div>
 
-      {(desarrollo_curricular || []).map((fila: FilaCurricularPlan) => {
-        const filaId = fila.id_fila;
-        const isFilaActive = selectedNode?.filaId === filaId;
+      {(desarrollo_curricular || []).map((fila: FilaCurricularPlan, rowIdx: number) => {
+        const isFilaActive = selectedNode?.rowIdx === rowIdx;
         const indicadores = fila.indicadores_logro || [];
         const actividades = fila.actividades_aprendizaje || [];
 
         return (
-          <div key={filaId} className="curricular-row-block">
+          <div key={rowIdx} className="curricular-row-block">
 
             <div className={`competency-tree-box ${isFilaActive ? 'has-active-path' : ''}`}>
               <div className={`tree-root-node ${isFilaActive ? 'active-root' : ''}`}>
@@ -198,7 +197,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
                       <div key={idx} className="tree-branch-group">
                         <div
                           className={`tree-branch-node ${isIndicatorSelected ? 'active-branch' : ''}`}
-                          onClick={() => handleNodeClick(filaId, idx)}
+                          onClick={() => handleNodeClick(rowIdx, idx)}
                           title="Haz clic para seleccionar este indicador de logro"
                         >
                           <div className="branch-line-connector" />
@@ -220,7 +219,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
                                   className={`tree-leaf-node ${isContentSelected ? 'active-leaf' : ''}`}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleNodeClick(filaId, idx, cIdx);
+                                    handleNodeClick(rowIdx, idx, cIdx);
                                   }}
                                   title="Haz clic para seleccionar e iluminar la línea de conexión"
                                 >
