@@ -97,7 +97,7 @@ export async function getThreads(): Promise<Thread[]> {
     return list.map((t: any, idx: number) => ({
       id: t.thread_id || t.id || `thread_${idx}`,
       title: t.title || t.metadata?.title || `Conversación ${list.length - idx}`,
-      createdAt: formatGMT6Time(t.created_at || Date.now()),
+      createdAt: formatGMT6Time(typeof t.created_at === 'string' ? t.created_at : new Date().toISOString()),
       messageCount: t.message_count || 0,
     }));
   }
@@ -161,7 +161,7 @@ export async function getThreadHistory(threadId: string): Promise<ChatMessage[]>
       return loadedMsgs;
     }
   } catch {
-    // Fallback gracefully without console logs
+    throw new Error('Fallo la conexión con el servidor');
   }
   return [];
 }

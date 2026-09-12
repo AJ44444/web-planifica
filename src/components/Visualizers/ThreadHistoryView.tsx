@@ -34,7 +34,7 @@ export const ThreadHistoryView: React.FC = () => {
           <div>
             <h2 className="visualizer-title">Historial de Conversaciones</h2>
             <p className="visualizer-subtitle">
-              Visualización estructurada de todas las conversaciones creadas y gestión de historial
+              Visualización de todas las conversaciones creadas
             </p>
           </div>
         </div>

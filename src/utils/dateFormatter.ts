@@ -6,24 +6,13 @@ function parseDate(dateInput?: string): { date: Date | null; raw: string } {
   const trimmed = dateInput.trim();
   if (!trimmed) return { date: null, raw: '' };
 
-  let date: Date | null = null;
+  const normalized = (trimmed.includes(' ') && !trimmed.includes('T'))
+    ? trimmed.replace(' ', 'T')
+    : trimmed;
 
-  const timestampMatch = trimmed.match(/Timestamp\s*\(\s*(\d+)/i);
-  if (timestampMatch && timestampMatch[1]) {
-    const sec = Number(timestampMatch[1]);
-    if (!isNaN(sec)) {
-      date = sec < 1e11 ? new Date(sec * 1000) : new Date(sec);
-    }
-  } else {
-    const num = Number(trimmed);
-    if (!isNaN(num)) {
-      date = num < 1e11 ? new Date(num * 1000) : new Date(num);
-    } else {
-      date = new Date(trimmed);
-    }
-  }
+  const date = new Date(normalized);
 
-  if (!date || isNaN(date.getTime())) {
+  if (isNaN(date.getTime())) {
     return { date: null, raw: trimmed };
   }
 

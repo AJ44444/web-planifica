@@ -39,7 +39,6 @@ export interface IndicadorPlanItem {
 
 export interface FilaCurricularPlan {
   id_fila: number;
-  titulo_fila?: string;
   competencia: string;
   indicadores_logro: IndicadorPlanItem[];
   actividades_aprendizaje: ActividadAprendizaje[];

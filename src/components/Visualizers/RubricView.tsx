@@ -5,8 +5,8 @@ import type { InstrumentoEvaluacion, CriterioEvaluacion, VisualizadoresData } fr
 export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
   const rawTools = rubrics || [];
   const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
-    tipo: t.tipo || 'rubrica',
-    titulo: t.titulo || 'Instrumento de Evaluación',
+    tipo: t.tipo,
+    titulo: t.titulo,
     escala: t.instrumento_generado?.escala || [],
     criterios: t.instrumento_generado?.criterios || [],
   }));

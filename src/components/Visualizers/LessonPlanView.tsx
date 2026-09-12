@@ -145,7 +145,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
         </div>
         <div className="meta-card">
           <span className="meta-label"><UserCheck size={12} /> Docente</span>
-          <span className="meta-value">{encabezado?.nombre_docente || (encabezado as any)?.docente}</span>
+          <span className="meta-value">{encabezado?.nombre_docente}</span>
         </div>
         <div className="meta-card">
           <span className="meta-label"><GraduationCap size={12} /> Carrera</span>
@@ -170,19 +170,15 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
         </div>
       </div>
 
-      {(desarrollo_curricular || []).map((fila: FilaCurricularPlan, filaIdx: number) => {
-        const filaId = fila.id_fila || (filaIdx + 1);
+      {(desarrollo_curricular || []).map((fila: FilaCurricularPlan) => {
+        const filaId = fila.id_fila;
         const isFilaActive = selectedNode?.filaId === filaId;
-        const indicadores = fila.indicadores_logro || (fila as any).indicadores_logro_y_contenidos || [];
+        const indicadores = fila.indicadores_logro || [];
         const actividades = fila.actividades_aprendizaje || [];
 
         return (
           <div key={filaId} className="curricular-row-block">
-            {fila.titulo_fila && (
-              <div className="fila-title-banner">
-                <span className="banner-text">## {fila.titulo_fila}</span>
-              </div>
-            )}
+
             <div className={`competency-tree-box ${isFilaActive ? 'has-active-path' : ''}`}>
               <div className={`tree-root-node ${isFilaActive ? 'active-root' : ''}`}>
                 <div className="box-title">

@@ -21,9 +21,9 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
       const response = await getLessonPlans(currentPage, 10);
       if (response && response.planificaciones) {
         setPlans(response.planificaciones);
-        setTotalPages(response.total_paginas || 1);
-        setTotalRecords(response.total_registros || response.planificaciones.length);
-        setPage(response.pagina_actual || currentPage);
+        setTotalPages(response.total_paginas);
+        setTotalRecords(response.total_registros);
+        setPage(response.pagina_actual);
       } else {
         setPlans([]);
       }
@@ -104,20 +104,20 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
                 {plans.map((plan) => (
                   <tr key={plan._id}>
                     <td className="font-semibold text-main">
-                      {plan.metadatos?.subarea_curricular || plan.encabezado?.carrera || 'Planificación de Clase'}
+                      {plan.metadatos?.subarea_curricular}
                     </td>
                     <td>
                       <span className="grade-badge">
-                        {plan.encabezado?.grado || 'General'}{' '}
-                        {plan.encabezado?.seccion ? `- ${plan.encabezado.seccion}` : ''}
+                        {plan.encabezado?.grado}{' '}
+                        {plan.encabezado?.seccion}
                       </span>
                     </td>
                     <td className="date-cell">
                       {formatGMT6Date(plan.metadatos?.fecha_creacion)}
                     </td>
                     <td>
-                      <span className={`status-badge ${plan.metadatos?.estado || 'finalizado'}`}>
-                        {plan.metadatos?.estado === 'en_proceso' ? 'En Proceso' : 'Finalizado'}
+                      <span className={`status-badge ${plan.metadatos?.estado}`}>
+                        {plan.metadatos?.estado}
                       </span>
                     </td>
                     <td className="text-right">
@@ -263,7 +263,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
         }
 
         .empty-icon {
-          color: #94a3b8;
+          color: #1d4ed8;
         }
 
         .table-responsive {

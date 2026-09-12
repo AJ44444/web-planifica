@@ -115,8 +115,8 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
 
       <div className="resources-grid">
         {(resources || []).map((res: RecursoMultimodal, index: number) => {
-          const resTipo = res.tipo || 'sitio_web';
-          const resUrl = res.url || '#';
+          const resTipo = res.tipo;
+          const resUrl = res.url;
           const embedUrl = resTipo === 'video' ? getYouTubeEmbedUrl(resUrl) : null;
 
           return (
