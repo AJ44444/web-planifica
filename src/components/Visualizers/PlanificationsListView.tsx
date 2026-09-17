@@ -3,10 +3,10 @@ import { getLessonPlans } from '../../services/api';
 import { formatGMT6Date } from '../../utils/dateFormatter';
 import { useLangGraph } from '../../context/LangGraphContext';
 import type { PlanificacionClase, PlanificationsListViewProps } from '../../types';
-import { Layers, ChevronLeft, ChevronRight, Eye, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { Layers, ChevronLeft, ChevronRight, Eye, Loader2, RefreshCw } from 'lucide-react';
 
 export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ onLoadVisualizers }) => {
-  const { showErrorNotification } = useLangGraph();
+  const { showErrorNotification, setActiveViewTab } = useLangGraph();
 
   const [plans, setPlans] = useState<PlanificacionClase[]>([]);
   const [page, setPage] = useState<number>(1);
@@ -83,9 +83,15 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
         </div>
       ) : plans.length === 0 ? (
         <div className="empty-state">
-          <Sparkles size={48} className="empty-icon" />
-          <h3>No se encontraron planificaciones</h3>
-          <p>Genera una nueva planificación desde el chat interactivo para registrarla aquí.</p>
+          <h3 className="empty-state-title">
+            No hay planes registrados, pásate por el chat y dale vida a tus próximos planes.
+          </h3>
+          <button
+            className="btn-go-chat"
+            onClick={() => setActiveViewTab('chat')}
+          >
+            Iniciar chat
+          </button>
         </div>
       ) : (
         <>
@@ -246,7 +252,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
           color: #1e293b;
         }
 
-        .loading-state, .empty-state {
+        .loading-state {
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -257,13 +263,53 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
           gap: 0.75rem;
         }
 
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 4rem 1.5rem;
+          text-align: center;
+          gap: 1.25rem;
+          background: #ffffff;
+          border-radius: 0.75rem;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 20px -2px rgba(29, 78, 216, 0.08);
+          min-height: 320px;
+        }
+
+        .empty-state-title {
+          font-family: var(--font-heading);
+          font-size: 1.15rem;
+          font-weight: 700;
+          color: #0f172a;
+          line-height: 1.5;
+          max-width: 520px;
+          margin: 0;
+        }
+
+        .btn-go-chat {
+          background: #1d4ed8;
+          color: #ffffff;
+          border: none;
+          padding: 0.65rem 1.25rem;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2);
+        }
+
+        .btn-go-chat:hover {
+          background: #1e40af;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+        }
+
         .spin-loader {
           color: #1d4ed8;
           animation: spin 1s linear infinite;
-        }
-
-        .empty-icon {
-          color: #1d4ed8;
         }
 
         .table-responsive {
@@ -272,24 +318,45 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
 
         .plans-table {
           width: 100%;
-          border-collapse: collapse;
-          text-align: left;
-          font-size: 0.9rem;
+          border-collapse: separate;
+          border-spacing: 0;
+          border: 1px solid #e2e8f0;
+          border-radius: 0.65rem;
+          overflow: hidden;
         }
 
         .plans-table th {
-          background: #f8fafc;
+          background: #eff6ff;
+          color: #1d4ed8;
+          border-bottom: 1px solid #bfdbfe;
+          font-family: var(--font-heading);
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+          text-align: left;
           padding: 0.75rem 1rem;
-          font-weight: 600;
-          color: #475569;
-          border-bottom: 1px solid #e2e8f0;
+          font-size: 0.8rem;
         }
 
         .plans-table td {
-          padding: 1rem;
-          border-bottom: 1px solid #f1f5f9;
-          color: #334155;
+          padding: 0.85rem 1rem;
+          border-bottom: 1px solid #e2e8f0;
+          font-size: 0.825rem;
+          color: #0f172a;
+          line-height: 1.45;
           vertical-align: middle;
+        }
+
+        .plans-table tr:last-child td {
+          border-bottom: none;
+        }
+
+        .plans-table tr:nth-child(odd) td {
+          background: #ffffff;
+        }
+
+        .plans-table tr:nth-child(even) td {
+          background: #f8fafc;
         }
 
         .plans-table tr:hover {
