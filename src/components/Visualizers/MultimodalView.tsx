@@ -1,23 +1,25 @@
 import React from 'react';
 import { Video, ExternalLink, MonitorPlay, Headphones, Layers, FileText, Globe } from 'lucide-react';
 import type { RecursoMultimodal, VisualizadoresData } from '../../types';
+import { useLangGraph } from '../../context/LangGraphContext';
 
 export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) => {
+  const { setActiveViewTab } = useLangGraph();
   const data = multimodals || [];
 
   if (data.length === 0) {
     return (
       <div className="empty-visualizer-container">
         <div className="empty-visualizer-content">
-          <div className="hero-logo-box">
-            <Video size={44} color="#ffffff" />
-          </div>
           <h2 className="empty-visualizer-title">
-            No hay recursos multimodales cargados.
+            No se ha seleccionado una planificación
           </h2>
-          <p className="empty-visualizer-subtitle">
-            Ve a la pestaña "Planificaciones" y presiona "Cargar Visualizadores".
-          </p>
+          <button
+            className="btn-go-planifications"
+            onClick={() => setActiveViewTab('planifications')}
+          >
+            Ver planificaciones
+          </button>
         </div>
 
         <style>{`
@@ -42,17 +44,6 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
             gap: 1.25rem;
           }
 
-          .hero-logo-box {
-            width: 72px;
-            height: 72px;
-            border-radius: 1.25rem;
-            background: linear-gradient(135deg, #1d4ed8, #2563eb);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 10px 25px -5px rgba(29, 78, 216, 0.35);
-          }
-
           .empty-visualizer-title {
             font-family: var(--font-heading);
             font-size: 1.25rem;
@@ -62,11 +53,23 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
             margin: 0;
           }
 
-          .empty-visualizer-subtitle {
+          .btn-go-planifications {
+            background: #1d4ed8;
+            color: #ffffff;
+            border: none;
+            padding: 0.65rem 1.25rem;
+            border-radius: 0.5rem;
             font-size: 0.875rem;
-            color: #64748b;
-            line-height: 1.6;
-            margin: 0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2);
+          }
+
+          .btn-go-planifications:hover {
+            background: #1e40af;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
           }
         `}</style>
       </div>

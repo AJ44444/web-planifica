@@ -153,7 +153,7 @@ const MainWorkspaceContent: React.FC = () => {
                       <BookOpen size={44} color="#ffffff" />
                     </div>
                     <h1 className="hero-title">Planifica</h1>
-                    <p className="hero-subtitle">Plataforma Educativa Inteligente</p>
+                    <p className="hero-subtitle">Plataforma Educativa</p>
                   </div>
                 ) : (
                   <div className="messages-timeline">
@@ -206,7 +206,7 @@ const MainWorkspaceContent: React.FC = () => {
                     <textarea
                       ref={textareaRef}
                       className="chat-textarea-input"
-                      placeholder="Escribe tu pregunta o comentario aquí..."
+                      placeholder="Escribe tu pregunta..."
                       value={inputPrompt}
                       onChange={(e) => {
                         setInputPrompt(e.target.value);

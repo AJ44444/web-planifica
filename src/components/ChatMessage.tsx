@@ -2,9 +2,11 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ChatMessageProps } from '../types';
-import { Bot, User } from 'lucide-react';
+import { Bot } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
+  const { user } = useAuth();
   const isUser = message.role === 'user';
   let displayContent = message.content;
 
@@ -24,7 +26,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
       <div className="avatar-cell">
         {isUser ? (
           <div className="user-chat-avatar">
-            <User size={18} color="#ffffff" />
+            {user?.nombres ? user.nombres.slice(0, 2).toUpperCase() : 'US'}
           </div>
         ) : (
           <div className="assistant-chat-avatar">
@@ -93,6 +95,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
           height: 36px;
           border-radius: 50%;
           background: #1d4ed8;
+          color: #ffffff;
+          font-size: 0.8rem;
+          font-weight: 600;
           display: flex;
           align-items: center;
           justify-content: center;

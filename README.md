@@ -1,4 +1,4 @@
-# 🎓 Planifica - Plataforma Educativa Inteligente
+# 🎓 Planifica - Plataforma Educativa
 
 **Planifica** es una plataforma web moderna para docentes diseñada para automatizar la generación de secuencias didácticas, instrumentos de evaluación (rúbricas y listas de cotejo) y la integración de recursos multimodales alineados a la malla curricular del **Currículum Nacional Base (CNB) de Guatemala**.
 
@@ -9,10 +9,10 @@
 Crea o edita el archivo `.env` en la raíz del proyecto con las siguientes variables:
 
 ```env
-# URL base del servidor LangGraph Supervisor API
+# URL base del servidor LangGraph
 VITE_LANGGRAPH_API_URL=http://localhost:8000
 
-# Client ID de Google OAuth 2.0 para inicio de sesión de docentes
+# Client ID de Google OAuth 2.0 para inicio de sesión
 VITE_GOOGLE_CLIENT_ID=tu_google_client_id.apps.googleusercontent.com
 ```
 
@@ -77,26 +77,3 @@ npm run dev
 npm run build
 ```
 
----
-
-## ⚡ Características Destacadas
-
-- **Exportación Formal a Microsoft Word (`.docx`)**:
-  - Exportación directa desde el visualizador de plan con el botón **`Exportar`**.
-  - Generación de documento horizontal (Landscape) en tamaño Carta con matriz curricular de 4 columnas, encabezados oficiales, tablas de evaluación y tabla de recursos con anchos equilibrados y salto de línea automático en URLs.
-  - Nombre dinámico del archivo descargado: `planificacion_[nombre_del_curso].docx`.
-
-- **Carga Directa de Documentos CNB (Codificación Base64 en JSON)**:
-  - Adjunción de archivos PDF del CNB directamente en la caja de texto del chat mediante el botón de clip 📎.
-  - Validación de formato exclusivo **PDF** y tamaño máximo permitidos de **10 MB**.
-  - Transmisión en memoria convirtiendo el archivo PDF a Data URI Base64 (`data:application/pdf;base64,...`) dentro del mensaje JSON (`application/json`).
-
-- **Autenticación Segura mediante HTTP Cookies**:
-  - Integración con Google OAuth 2.0 y administración de sesión mediante cookies HTTP seguras (`access_token` y `refresh_token`) gestionadas automáticamente por el navegador (`credentials: 'include'`).
-
-- **Grafo Multiagente Transmisión SSE**:
-  - Conexión en tiempo real mediante Server-Sent Events con el Grafo Supervisor de LangGraph y parseo dinámico de datos estructurados.
-
-- **Estandarización Tipográfica y Diseño Responsive**:
-  - Tipografía unificada (`Outfit` para encabezados e `Inter` para texto general).
-  - Adaptación responsive completa en login, barra superior y visualizadores para escritorio, tabletas y teléfonos móviles.
