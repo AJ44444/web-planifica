@@ -8,11 +8,7 @@ import { useAuth } from '../context/AuthContext';
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
   const { user } = useAuth();
   const isUser = message.role === 'user';
-  let displayContent = message.content;
-
-  if (displayContent && displayContent.includes('data:application/pdf;base64,')) {
-    displayContent = displayContent.replace(/data:application\/pdf;base64,[A-Za-z0-9+/=]+/g, '📄 *(Documento PDF del CNB adjunto)*');
-  }
+  const displayContent = message.content;
 
   const showLoadingDots = !isUser && isStreaming && !message.content;
   const showFooterDots = !isUser && isStreaming && !!message.content;

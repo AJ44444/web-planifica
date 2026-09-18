@@ -54,28 +54,30 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
             font-family: var(--font-heading);
             font-size: 1.25rem;
             font-weight: 700;
-            color: #0f172a;
+            color: #64748b;
             line-height: 1.4;
             margin: 0;
           }
 
           .btn-go-planifications {
-            background: #1d4ed8;
-            color: #ffffff;
-            border: none;
-            padding: 0.65rem 1.25rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 0.55rem 1.15rem;
+            border-radius: 0.4rem;
+            font-size: 0.85rem;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(29, 78, 216, 0.2);
+            transition: all 0.15s ease;
           }
 
           .btn-go-planifications:hover {
-            background: #1e40af;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 14px rgba(29, 78, 216, 0.3);
+            background: #dbeafe;
+            border-color: #2563eb;
           }
         `}</style>
       </div>

@@ -16,7 +16,7 @@ import { LoginModal } from './components/LoginModal';
 
 import { getLessonPlanDetail } from './services/api';
 import type { LessonPlanDetailResponse } from './types';
-import { Send, BookOpen, Paperclip, FileText, X } from 'lucide-react';
+import { Send, BookOpen } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -35,10 +35,8 @@ const MainWorkspaceContent: React.FC = () => {
 
   const [selectedPlanDetail, setSelectedPlanDetail] = useState<LessonPlanDetailResponse | null>(null);
   const [inputPrompt, setInputPrompt] = useState('');
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadVisualizers = async (planId: string): Promise<boolean> => {
     try {
@@ -76,57 +74,13 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
-
-      if (!isPdf) {
-        showErrorNotification('Solo se admiten archivos en formato PDF.');
-        e.target.value = '';
-        return;
-      }
-
-      if (file.size > MAX_SIZE_BYTES) {
-        showErrorNotification('El archivo supera el tamaño máximo permitido de 10 MB.');
-        e.target.value = '';
-        return;
-      }
-
-      setAttachedFile(file);
-      e.target.value = '';
-    }
-  };
-
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (err) => reject(err);
-    });
-  };
-
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if ((!inputPrompt.trim() && !attachedFile) || isStreaming) return;
+    if (!inputPrompt.trim() || isStreaming) return;
     
-    let textToSend = inputPrompt.trim();
-    if (attachedFile) {
-      try {
-        const base64Str = await fileToBase64(attachedFile);
-        const prefix = textToSend 
-          ? `${textToSend}\n\n[Documento CNB: ${attachedFile.name}]\n${base64Str}`
-          : `Por favor procesa el siguiente documento PDF del CNB (${attachedFile.name}): ${base64Str}`;
-        textToSend = prefix;
-      } catch {
-        showErrorNotification('No fue posible procesar el archivo PDF adjunto. Por favor, intenta de nuevo.');
-      }
-    }
+    const textToSend = inputPrompt.trim();
 
     setInputPrompt('');
-    setAttachedFile(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -169,40 +123,7 @@ const MainWorkspaceContent: React.FC = () => {
                 )}
 
                 <form className="chat-input-form" onSubmit={handleSend}>
-                  {attachedFile && (
-                    <div className="chat-attachment-chip">
-                      <FileText size={16} className="chip-icon" />
-                      <span className="chip-name">{attachedFile.name}</span>
-                      <span className="chip-size">({(attachedFile.size / (1024 * 1024)).toFixed(2)} MB)</span>
-                      <button
-                        type="button"
-                        className="chip-remove-btn"
-                        onClick={() => setAttachedFile(null)}
-                        title="Quitar archivo adjunto"
-                      >
-                        <X size={14} />
-                      </button>
-                    </div>
-                  )}
-
                   <div className="chat-input-row">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      accept=".pdf"
-                      onChange={handleFileSelect}
-                      style={{ display: 'none' }}
-                    />
-                    <button
-                      type="button"
-                      className="btn-attach-file"
-                      onClick={() => fileInputRef.current?.click()}
-                      title="Adjuntar PDF del CNB"
-                      disabled={isStreaming}
-                    >
-                      <Paperclip size={18} />
-                    </button>
-
                     <textarea
                       ref={textareaRef}
                       className="chat-textarea-input"
@@ -232,7 +153,7 @@ const MainWorkspaceContent: React.FC = () => {
                     <button
                       type="submit"
                       className="btn btn-primary send-btn"
-                      disabled={(!inputPrompt.trim() && !attachedFile) || isStreaming}
+                      disabled={!inputPrompt.trim() || isStreaming}
                     >
                       <Send size={18} />
                       <span>Enviar</span>
@@ -382,72 +303,11 @@ const MainWorkspaceContent: React.FC = () => {
           box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12);
         }
 
-        .chat-attachment-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.4rem;
-          background: #eff6ff;
-          border: 1px solid #bfdbfe;
-          padding: 0.35rem 0.65rem;
-          border-radius: 0.5rem;
-          font-size: 0.8rem;
-          align-self: flex-start;
-        }
-
-        .chip-icon {
-          color: #1d4ed8;
-        }
-
-        .chip-name {
-          font-weight: 600;
-          color: #1e40af;
-        }
-
-        .chip-size {
-          color: #64748b;
-          font-size: 0.725rem;
-        }
-
-        .chip-remove-btn {
-          background: transparent;
-          border: none;
-          color: #64748b;
-          cursor: pointer;
-          padding: 0.15rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 0.25rem;
-        }
-
-        .chip-remove-btn:hover {
-          color: #ef4444;
-          background: #fee2e2;
-        }
-
         .chat-input-row {
           display: flex;
           align-items: flex-end;
           gap: 0.5rem;
           width: 100%;
-        }
-
-        .btn-attach-file {
-          background: transparent;
-          border: none;
-          color: #64748b;
-          padding: 0.45rem;
-          border-radius: 0.5rem;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-        }
-
-        .btn-attach-file:hover {
-          color: #1d4ed8;
-          background: #f1f5f9;
         }
 
         .chat-textarea-input {
