@@ -12,7 +12,7 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
       <div className="empty-visualizer-container">
         <div className="empty-visualizer-content">
           <h2 className="empty-visualizer-title">
-            No se ha seleccionado una planificación
+            No se ha seleccionado una planificación o la planificación no contiene recursos multimodales
           </h2>
           <button
             className="btn-go-planifications"
@@ -47,7 +47,7 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
           .empty-visualizer-title {
             font-family: var(--font-heading);
             font-size: 1.25rem;
-            font-weight: 700;
+            font-weight: 400;
             color: #64748b;
             line-height: 1.4;
             margin: 0;

@@ -384,7 +384,7 @@ h4 { font-size: 1rem; line-height: 1.5rem; }
 .empty-visualizer-title {
   font-family: var(--font-heading);
   font-size: 1.25rem;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--text-muted);
   line-height: 1.4;
   margin: 0;

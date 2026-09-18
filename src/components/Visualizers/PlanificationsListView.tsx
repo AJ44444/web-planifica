@@ -281,7 +281,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
         .empty-state-title {
           font-family: var(--font-heading);
           font-size: 1.15rem;
-          font-weight: 700;
+          font-weight: 400;
           color: #64748b;
           line-height: 1.5;
           max-width: 520px;

@@ -68,7 +68,7 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
           .empty-visualizer-title {
             font-family: var(--font-heading);
             font-size: 1.25rem;
-            font-weight: 700;
+            font-weight: 400;
             color: #64748b;
             line-height: 1.4;
             margin: 0;
