@@ -223,7 +223,7 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
 
         .resources-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
           gap: 1.25rem;
         }
 
@@ -362,6 +362,16 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
 
         .btn-link:hover {
           text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+          .multimodal-visualizer-container {
+            padding: 0.85rem;
+          }
+          .resources-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+            gap: 0.85rem;
+          }
         }
       `}</style>
     </div>

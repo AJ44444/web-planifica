@@ -118,8 +118,7 @@ const MainWorkspaceContent: React.FC = () => {
     
     let textToSend = inputPrompt.trim();
     if (attachedFile) {
-      const attachmentNotice = `[Documento CNB adjunto: ${attachedFile.file.name}] (file_key: ${attachedFile.key})`;
-      textToSend = textToSend ? `${textToSend}\n\n${attachmentNotice}` : attachmentNotice;
+      textToSend = textToSend ? `${textToSend}\n\n${attachedFile.key}` : attachedFile.key;
     }
 
     setInputPrompt('');
