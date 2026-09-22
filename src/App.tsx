@@ -14,9 +14,9 @@ import { ThreadHistoryView } from './components/Visualizers/ThreadHistoryView';
 import { PlanificationsListView } from './components/Visualizers/PlanificationsListView';
 import { LoginModal } from './components/LoginModal';
 
-import { getLessonPlanDetail } from './services/api';
+import { getLessonPlanDetail, generateUploadUrl, uploadFileToPresignedUrl } from './services/api';
 import type { LessonPlanDetailResponse } from './types';
-import { Send, BookOpen } from 'lucide-react';
+import { Send, BookOpen, Paperclip, FileText, X, Loader2 } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -35,8 +35,11 @@ const MainWorkspaceContent: React.FC = () => {
 
   const [selectedPlanDetail, setSelectedPlanDetail] = useState<LessonPlanDetailResponse | null>(null);
   const [inputPrompt, setInputPrompt] = useState('');
+  const [attachedFile, setAttachedFile] = useState<{ file: File; key: string } | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadVisualizers = async (planId: string): Promise<boolean> => {
     try {
@@ -74,13 +77,53 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      e.target.value = '';
+
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+
+      if (!isPdf) {
+        showErrorNotification('Solo se admiten archivos en formato PDF.');
+        return;
+      }
+
+      if (file.size > MAX_SIZE_BYTES) {
+        showErrorNotification('El archivo supera el tamaño máximo permitido de 10 MB.');
+        return;
+      }
+
+      setIsUploadingFile(true);
+      try {
+        const presignedData = await generateUploadUrl();
+        await uploadFileToPresignedUrl(presignedData, file);
+        setAttachedFile({
+          file,
+          key: presignedData.file_key,
+        });
+      } catch (err: any) {
+        showErrorNotification(err?.message || 'Error al subir el archivo. Intenta de nuevo.');
+        setAttachedFile(null);
+      } finally {
+        setIsUploadingFile(false);
+      }
+    }
+  };
+
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputPrompt.trim() || isStreaming) return;
+    if ((!inputPrompt.trim() && !attachedFile) || isStreaming || isUploadingFile) return;
     
-    const textToSend = inputPrompt.trim();
+    let textToSend = inputPrompt.trim();
+    if (attachedFile) {
+      const attachmentNotice = `[Documento CNB adjunto: ${attachedFile.file.name}] (file_key: ${attachedFile.key})`;
+      textToSend = textToSend ? `${textToSend}\n\n${attachmentNotice}` : attachmentNotice;
+    }
 
     setInputPrompt('');
+    setAttachedFile(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -123,7 +166,55 @@ const MainWorkspaceContent: React.FC = () => {
                 )}
 
                 <form className="chat-input-form" onSubmit={handleSend}>
+                  {(attachedFile || isUploadingFile) && (
+                    <div className="chat-attachment-chip">
+                      {isUploadingFile ? (
+                        <>
+                          <Loader2 size={16} className="chip-icon spin" />
+                          <span className="chip-name">Subiendo archivo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FileText size={16} className="chip-icon" />
+                          <span className="chip-name">{attachedFile?.file.name}</span>
+                          <span className="chip-size">
+                            ({((attachedFile?.file.size || 0) / (1024 * 1024)).toFixed(2)} MB)
+                          </span>
+                          <button
+                            type="button"
+                            className="chip-remove-btn"
+                            onClick={() => setAttachedFile(null)}
+                            title="Quitar archivo adjunto"
+                          >
+                            <X size={14} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   <div className="chat-input-row">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      accept=".pdf"
+                      onChange={handleFileSelect}
+                      style={{ display: 'none' }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-attach-file"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Adjuntar PDF del CNB"
+                      disabled={isStreaming || isUploadingFile}
+                    >
+                      {isUploadingFile ? (
+                        <Loader2 size={18} className="spin" />
+                      ) : (
+                        <Paperclip size={18} />
+                      )}
+                    </button>
+
                     <textarea
                       ref={textareaRef}
                       className="chat-textarea-input"
@@ -148,12 +239,12 @@ const MainWorkspaceContent: React.FC = () => {
                         }
                       }}
                       rows={1}
-                      disabled={isStreaming}
+                      disabled={isStreaming || isUploadingFile}
                     />
                     <button
                       type="submit"
                       className="btn btn-primary send-btn"
-                      disabled={!inputPrompt.trim() || isStreaming}
+                      disabled={(!inputPrompt.trim() && !attachedFile) || isStreaming || isUploadingFile}
                     >
                       <Send size={18} />
                       <span>Enviar</span>
@@ -301,6 +392,81 @@ const MainWorkspaceContent: React.FC = () => {
         .chat-input-form:focus-within {
           border-color: #2563eb;
           box-shadow: 0 4px 20px rgba(37, 99, 235, 0.12);
+        }
+
+        .chat-attachment-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          padding: 0.35rem 0.65rem;
+          border-radius: 0.5rem;
+          font-size: 0.8rem;
+          align-self: flex-start;
+        }
+
+        .chip-icon {
+          color: #1d4ed8;
+        }
+
+        .chip-name {
+          font-weight: 600;
+          color: #1e40af;
+        }
+
+        .chip-size {
+          color: #64748b;
+          font-size: 0.725rem;
+        }
+
+        .chip-remove-btn {
+          background: transparent;
+          border: none;
+          color: #64748b;
+          cursor: pointer;
+          padding: 0.15rem;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 0.25rem;
+        }
+
+        .chip-remove-btn:hover {
+          color: #ef4444;
+          background: #fee2e2;
+        }
+
+        .btn-attach-file {
+          background: transparent;
+          border: none;
+          color: #64748b;
+          padding: 0.45rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+
+        .btn-attach-file:hover:not(:disabled) {
+          color: #1d4ed8;
+          background: #f1f5f9;
+        }
+
+        .btn-attach-file:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .spin {
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
 
         .chat-input-row {

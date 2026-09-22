@@ -156,3 +156,11 @@ export interface ChatMessageProps {
 export interface PlanificationsListViewProps {
   onLoadVisualizers?: (planId: string) => Promise<boolean>;
 }
+
+export interface PresignedUrlResponse {
+  status: string;
+  url: string;
+  fields: Record<string, string>;
+  file_key: string;
+  expires_in: number;
+}

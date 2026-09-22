@@ -1,4 +1,4 @@
-import type { ChatMessage, Thread, StreamCallbacks } from '../types';
+import type { ChatMessage, Thread, StreamCallbacks, PresignedUrlResponse } from '../types';
 import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
@@ -294,4 +294,44 @@ export async function getLessonPlanDetail(id: string): Promise<any> {
   }
 
   return await response.json();
+}
+
+export async function generateUploadUrl(): Promise<PresignedUrlResponse> {
+  await verifyServerSession();
+
+  const response = await fetch(`${API_BASE_URL}/api/generate-url`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error('No fue posible obtener la URL para subir el archivo');
+  }
+
+  return await response.json();
+}
+
+export async function uploadFileToPresignedUrl(
+  presignedData: PresignedUrlResponse,
+  file: File
+): Promise<void> {
+  const formData = new FormData();
+
+  if (presignedData.fields && typeof presignedData.fields === 'object') {
+    Object.entries(presignedData.fields).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+  }
+
+  formData.append('file', file);
+
+  const response = await fetch(presignedData.url, {
+    method: 'POST',
+    body: formData,
+    credentials: 'omit',
+  });
+
+  if (!response.ok) {
+    throw new Error('No fue posible subir el archivo al almacenamiento');
+  }
 }
