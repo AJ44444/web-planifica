@@ -11,7 +11,8 @@ import {
   getThreadHistory, 
   deleteThread, 
   streamLangGraphRun, 
-  checkServerHealth
+  checkServerHealth,
+  subscribeToNotifications
 } from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -41,15 +42,27 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, []);
 
   useEffect(() => {
+    let unsubscribeNotifications: (() => void) | undefined;
+
     const initThreads = async () => {
       if (isAuthenticated) {
         const loadedThreads = await getThreads();
         setThreads(loadedThreads || []);
         setCurrentThreadId(null);
         setMessages([]);
+
+        unsubscribeNotifications = subscribeToNotifications((notificationText) => {
+          showErrorNotification(notificationText);
+        });
       }
     };
     initThreads();
+
+    return () => {
+      if (unsubscribeNotifications) {
+        unsubscribeNotifications();
+      }
+    };
   }, [isAuthenticated]);
 
   const createNewThread = async (): Promise<string | null> => {

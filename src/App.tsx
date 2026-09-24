@@ -14,9 +14,9 @@ import { ThreadHistoryView } from './components/Visualizers/ThreadHistoryView';
 import { PlanificationsListView } from './components/Visualizers/PlanificationsListView';
 import { LoginModal } from './components/LoginModal';
 
-import { getLessonPlanDetail /*, generateUploadUrl, uploadFileToPresignedUrl */ } from './services/api';
+import { getLessonPlanDetail, generateUploadUrl, uploadFileToPresignedUrl } from './services/api';
 import type { LessonPlanDetailResponse } from './types';
-import { Send, BookOpen, /* Paperclip, */ FileText, X, Loader2 } from 'lucide-react';
+import { Send, BookOpen, Paperclip, FileText, X, Loader2 } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -36,10 +36,10 @@ const MainWorkspaceContent: React.FC = () => {
   const [selectedPlanDetail, setSelectedPlanDetail] = useState<LessonPlanDetailResponse | null>(null);
   const [inputPrompt, setInputPrompt] = useState('');
   const [attachedFile, setAttachedFile] = useState<{ file: File; key: string } | null>(null);
-  const [isUploadingFile] = useState<boolean>(false);
+  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  // const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadVisualizers = async (planId: string): Promise<boolean> => {
     try {
@@ -77,7 +77,6 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
-  /* Funcionalidad de adjuntar archivos deshabilitada temporalmente
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -112,7 +111,6 @@ const MainWorkspaceContent: React.FC = () => {
       }
     }
   };
-  */
 
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -195,7 +193,6 @@ const MainWorkspaceContent: React.FC = () => {
                   )}
 
                   <div className="chat-input-row">
-                    {/* Botón de adjuntar archivos deshabilitado temporalmente
                     <input
                       type="file"
                       ref={fileInputRef}
@@ -216,7 +213,6 @@ const MainWorkspaceContent: React.FC = () => {
                         <Paperclip size={18} />
                       )}
                     </button>
-                    */}
 
                     <textarea
                       ref={textareaRef}

@@ -335,3 +335,67 @@ export async function uploadFileToPresignedUrl(
     throw new Error('No fue posible subir el archivo al almacenamiento');
   }
 }
+
+export function subscribeToNotifications(
+  onNotification: (text: string) => void,
+  onError?: (error: any) => void
+): () => void {
+  const controller = new AbortController();
+
+  const connect = async () => {
+    try {
+      await verifyServerSession();
+
+      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+        credentials: 'include',
+        signal: controller.signal,
+      });
+
+      if (!response.ok || !response.body) {
+        if (onError) onError(new Error('No fue posible conectar con el servicio de notificaciones'));
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith(':')) continue;
+
+          if (trimmed.startsWith('data:')) {
+            const dataText = trimmed.slice(5).trim();
+            if (dataText) {
+              onNotification(dataText);
+            }
+          } else {
+            onNotification(trimmed);
+          }
+        }
+      }
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
+      if (onError) onError(err);
+    }
+  };
+
+  connect();
+
+  return () => {
+    controller.abort();
+  };
+}
