@@ -3,7 +3,8 @@ import type {
   ChatMessage, 
   Thread,
   ViewTabType,
-  LangGraphContextType
+  LangGraphContextType,
+  NotificationBannerState
 } from '../types';
 import { 
   createThread, 
@@ -27,9 +28,27 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [isServerOnline, setIsServerOnline] = useState<boolean>(true);
   const [activeViewTab, setActiveViewTab] = useState<ViewTabType>('chat');
+  const [notificationBanner, setNotificationBanner] = useState<NotificationBannerState | null>(null);
+
+  const showNotificationBanner = (
+    msg: string, 
+    type: NotificationBannerState['type'] = 'info', 
+    idSubarea?: string
+  ) => {
+    setNotificationBanner({
+      id: `notif_${Date.now()}`,
+      message: msg,
+      type,
+      idSubarea,
+    });
+  };
+
+  const closeNotificationBanner = () => {
+    setNotificationBanner(null);
+  };
 
   const showErrorNotification = (msg: string) => {
-    window.alert(msg);
+    showNotificationBanner(msg, 'error');
   };
 
   const checkHealth = async () => {
@@ -53,16 +72,23 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         unsubscribeNotifications = subscribeToNotifications((notification) => {
           if (notification.status === 'connected') {
-            console.log('Notificaciones SSE conectadas:', notification.message);
             return;
           }
 
           if (notification.status === 'in_progress') {
-            console.log(`Procesando subárea (${notification.id_subarea})...`);
+            showNotificationBanner(
+              'Procesando secuencia didáctica/subárea...',
+              'in_progress',
+              notification.id_subarea
+            );
           } else if (notification.status === 'completed') {
-            console.log(`Subárea completada (${notification.id_subarea})`);
+            showNotificationBanner(
+              'Secuencia didáctica completada exitosamente.',
+              'completed',
+              notification.id_subarea
+            );
           } else if (notification.message) {
-            console.log('Notificación SSE:', notification.message);
+            showNotificationBanner(notification.message, 'info', notification.id_subarea);
           }
         });
       }
@@ -216,6 +242,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         isStreaming,
         isServerOnline,
         activeViewTab,
+        notificationBanner,
         setActiveViewTab,
         sendMessage,
         createNewThread,
@@ -224,6 +251,8 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         resetChatToHero,
         checkHealth,
         showErrorNotification,
+        showNotificationBanner,
+        closeNotificationBanner,
       }}
     >
       {children}

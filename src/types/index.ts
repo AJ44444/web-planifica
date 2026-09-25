@@ -126,6 +126,13 @@ export interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+export interface NotificationBannerState {
+  id: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error' | 'in_progress' | 'completed';
+  idSubarea?: string;
+}
+
 export interface LangGraphContextType {
   currentThreadId: string | null;
   threads: Thread[];
@@ -133,6 +140,7 @@ export interface LangGraphContextType {
   isStreaming: boolean;
   isServerOnline: boolean;
   activeViewTab: ViewTabType;
+  notificationBanner: NotificationBannerState | null;
   setActiveViewTab: (tab: ViewTabType) => void;
   sendMessage: (text: string) => Promise<void>;
   createNewThread: () => Promise<string | null>;
@@ -141,6 +149,8 @@ export interface LangGraphContextType {
   resetChatToHero: () => void;
   checkHealth: () => Promise<void>;
   showErrorNotification: (msg: string) => void;
+  showNotificationBanner: (msg: string, type?: NotificationBannerState['type'], idSubarea?: string) => void;
+  closeNotificationBanner: () => void;
 }
 
 export interface AgentStatusPanelProps {

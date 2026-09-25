@@ -5,6 +5,7 @@ import { LangGraphProvider, useLangGraph } from './context/LangGraphContext';
 import type { ViewTabType } from './types';
 
 import { Navbar } from './components/Navbar';
+import { NotificationBanner } from './components/NotificationBanner';
 import { AgentStatusPanel } from './components/AgentStatusPanel';
 import { ChatMessage } from './components/ChatMessage';
 import { LessonPlanView } from './components/Visualizers/LessonPlanView';
@@ -131,6 +132,7 @@ const MainWorkspaceContent: React.FC = () => {
 
   return (
     <div className="app-shell">
+      <NotificationBanner />
       <Navbar />
 
       <div className="app-main-layout">
