@@ -164,3 +164,10 @@ export interface PresignedUrlResponse {
   file_key: string;
   expires_in: number;
 }
+
+export interface SSENotificationData {
+  status: 'connected' | 'in_progress' | 'completed' | string;
+  message?: string;
+  id_subarea?: string;
+  [key: string]: any;
+}

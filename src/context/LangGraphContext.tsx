@@ -51,8 +51,19 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setCurrentThreadId(null);
         setMessages([]);
 
-        unsubscribeNotifications = subscribeToNotifications((notificationText) => {
-          showErrorNotification(notificationText);
+        unsubscribeNotifications = subscribeToNotifications((notification) => {
+          if (notification.status === 'connected') {
+            console.log('Notificaciones SSE conectadas:', notification.message);
+            return;
+          }
+
+          if (notification.status === 'in_progress') {
+            console.log(`Procesando subárea (${notification.id_subarea})...`);
+          } else if (notification.status === 'completed') {
+            console.log(`Subárea completada (${notification.id_subarea})`);
+          } else if (notification.message) {
+            console.log('Notificación SSE:', notification.message);
+          }
         });
       }
     };

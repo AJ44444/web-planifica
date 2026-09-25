@@ -1,4 +1,4 @@
-import type { ChatMessage, Thread, StreamCallbacks, PresignedUrlResponse } from '../types';
+import type { ChatMessage, Thread, StreamCallbacks, PresignedUrlResponse, SSENotificationData } from '../types';
 import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
@@ -337,7 +337,7 @@ export async function uploadFileToPresignedUrl(
 }
 
 export function subscribeToNotifications(
-  onNotification: (text: string) => void,
+  onNotification: (data: SSENotificationData) => void,
   onError?: (error: any) => void
 ): () => void {
   const controller = new AbortController();
@@ -377,13 +377,20 @@ export function subscribeToNotifications(
           const trimmed = line.trim();
           if (!trimmed || trimmed.startsWith(':')) continue;
 
+          let rawData = '';
           if (trimmed.startsWith('data:')) {
-            const dataText = trimmed.slice(5).trim();
-            if (dataText) {
-              onNotification(dataText);
-            }
+            rawData = trimmed.slice(5).trim();
           } else {
-            onNotification(trimmed);
+            rawData = trimmed;
+          }
+
+          if (rawData) {
+            try {
+              const parsed: SSENotificationData = JSON.parse(rawData);
+              onNotification(parsed);
+            } catch {
+              onNotification({ status: 'raw', message: rawData });
+            }
           }
         }
       }
