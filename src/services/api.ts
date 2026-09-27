@@ -1,4 +1,4 @@
-import type { ChatMessage, Thread, StreamCallbacks, PresignedUrlResponse, SSENotificationData } from '../types';
+import type { ChatMessage, Thread, StreamCallbacks, PresignedUrlResponse, SSENotificationData, ProcessPdfResponse } from '../types';
 import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
@@ -334,6 +334,33 @@ export async function uploadFileToPresignedUrl(
   if (!response.ok) {
     throw new Error('No fue posible subir el archivo al almacenamiento');
   }
+}
+
+export async function processPdf(fileKey: string, nombreCarrera: string): Promise<ProcessPdfResponse> {
+  await verifyServerSession();
+
+  const response = await fetch(`${API_BASE_URL}/api/process-pdf`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      file_key: fileKey,
+      nombre_carrera: nombreCarrera,
+    }),
+  });
+
+  if (!response.ok) {
+    let errMessage = 'No fue posible procesar el documento PDF.';
+    try {
+      const errData = await response.json();
+      if (errData && errData.message) errMessage = errData.message;
+    } catch {}
+    throw new Error(errMessage);
+  }
+
+  return await response.json();
 }
 
 export function subscribeToNotifications(

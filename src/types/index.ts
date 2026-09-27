@@ -127,10 +127,7 @@ export interface AuthContextType {
 }
 
 export interface NotificationBannerState {
-  id: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error' | 'in_progress' | 'completed';
-  idSubarea?: string;
 }
 
 export interface LangGraphContextType {
@@ -149,7 +146,7 @@ export interface LangGraphContextType {
   resetChatToHero: () => void;
   checkHealth: () => Promise<void>;
   showErrorNotification: (msg: string) => void;
-  showNotificationBanner: (msg: string, type?: NotificationBannerState['type'], idSubarea?: string) => void;
+  showNotificationBanner: (msg: string) => void;
   closeNotificationBanner: () => void;
 }
 
@@ -173,6 +170,11 @@ export interface PresignedUrlResponse {
   fields: Record<string, string>;
   file_key: string;
   expires_in: number;
+}
+
+export interface ProcessPdfResponse {
+  status: string;
+  message: string;
 }
 
 export interface SSENotificationData {

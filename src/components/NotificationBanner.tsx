@@ -1,49 +1,20 @@
 import React from 'react';
 import { useLangGraph } from '../context/LangGraphContext';
-import { 
-  Info, 
-  CheckCircle2, 
-  AlertCircle, 
-  AlertTriangle, 
-  Loader2, 
-  X 
-} from 'lucide-react';
+import { Info, X } from 'lucide-react';
 
 export const NotificationBanner: React.FC = () => {
   const { notificationBanner, closeNotificationBanner } = useLangGraph();
 
   if (!notificationBanner) return null;
 
-  const { message, type, idSubarea } = notificationBanner;
-
-  const getBannerIcon = () => {
-    switch (type) {
-      case 'in_progress':
-        return <Loader2 size={16} className="banner-icon spin-icon" />;
-      case 'completed':
-      case 'success':
-        return <CheckCircle2 size={16} className="banner-icon icon-success" />;
-      case 'error':
-        return <AlertCircle size={16} className="banner-icon icon-error" />;
-      case 'warning':
-        return <AlertTriangle size={16} className="banner-icon icon-warning" />;
-      case 'info':
-      default:
-        return <Info size={16} className="banner-icon icon-info" />;
-    }
-  };
+  const { message } = notificationBanner;
 
   return (
-    <div className={`top-notification-banner banner-${type}`}>
+    <div className="top-notification-banner">
       <div className="banner-container">
         <div className="banner-content">
-          {getBannerIcon()}
+          <Info size={16} className="banner-icon" />
           <span className="banner-message">{message}</span>
-          {idSubarea && (
-            <span className="banner-subarea-chip">
-              ID: {idSubarea}
-            </span>
-          )}
         </div>
 
         <button
@@ -148,24 +119,15 @@ export const NotificationBanner: React.FC = () => {
           transform: scale(1.05);
         }
 
-        /* Contextual color themes */
-        .banner-in_progress, .banner-info {
-          background: linear-gradient(90deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
-          color: #ffffff;
-        }
-
-        .banner-completed, .banner-success {
-          background: linear-gradient(90deg, #065f46 0%, #059669 100%);
-          color: #ffffff;
-        }
-
-        .banner-error {
-          background: linear-gradient(90deg, #991b1b 0%, #dc2626 100%);
-          color: #ffffff;
-        }
-
+        /* All notification banners use strictly blue color theme */
+        .top-notification-banner,
+        .banner-in_progress, 
+        .banner-info,
+        .banner-completed, 
+        .banner-success,
+        .banner-error,
         .banner-warning {
-          background: linear-gradient(90deg, #92400e 0%, #d97706 100%);
+          background: linear-gradient(90deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
           color: #ffffff;
         }
 

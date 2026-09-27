@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLangGraph } from '../context/LangGraphContext';
+import { 
+  generateUploadUrl, 
+  uploadFileToPresignedUrl, 
+  processPdf 
+} from '../services/api';
 import { 
   BookOpen, 
   Plus, 
@@ -13,7 +18,10 @@ import {
   Layers,
   ClipboardCheck,
   Video,
-  History
+  History,
+  FileText,
+  Upload,
+  Loader2
 } from 'lucide-react';
 import type { ViewTabType } from '../types';
 
@@ -31,9 +39,61 @@ export const Navbar: React.FC = () => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [nombreCarrera, setNombreCarrera] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleSelectTab = (tab: ViewTabType) => {
     setActiveViewTab(tab);
     setIsMobileMenuOpen(false);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      e.target.value = '';
+
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const MAX_SIZE_BYTES = 10 * 1024 * 1024;
+
+      if (!isPdf) {
+        window.alert('Solo se admiten archivos en formato PDF.');
+        return;
+      }
+
+      if (file.size > MAX_SIZE_BYTES) {
+        window.alert('El archivo supera el tamaño máximo permitido de 10 MB.');
+        return;
+      }
+
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUploadAndProcess = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFile || !nombreCarrera.trim() || isProcessing) return;
+
+    setIsProcessing(true);
+    try {
+      const presignedData = await generateUploadUrl();
+
+      await uploadFileToPresignedUrl(presignedData, selectedFile);
+
+      const res = await processPdf(presignedData.file_key, nombreCarrera.trim());
+
+      window.alert(res.message || 'Documento PDF procesado correctamente.');
+
+      setIsModalOpen(false);
+      setSelectedFile(null);
+      setNombreCarrera('');
+    } catch (err: any) {
+      window.alert(err?.message || 'No fue posible procesar el archivo PDF. Intenta de nuevo.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -93,6 +153,16 @@ export const Navbar: React.FC = () => {
       </div>
 
       <div className="navbar-right">
+        <button
+          type="button"
+          className="btn-upload-cnb"
+          onClick={() => setIsModalOpen(true)}
+          title="Cargar documento CNB (PDF)"
+        >
+          <FileText size={16} />
+          <span className="cnb-btn-text">Cargar CNB</span>
+        </button>
+
         {user && (
           <div className="user-profile-chip">
             <div className="user-avatar-fallback">
@@ -153,7 +223,132 @@ export const Navbar: React.FC = () => {
               <History size={18} />
               <span>Historial</span>
             </button>
+
+            <button
+              className="mobile-nav-item mobile-cnb-btn"
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsModalOpen(true);
+              }}
+            >
+              <FileText size={18} />
+              <span>Cargar Documento CNB</span>
+            </button>
           </nav>
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div className="cnb-modal-overlay" onClick={() => !isProcessing && setIsModalOpen(false)}>
+          <div className="cnb-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="cnb-modal-header">
+              <div className="cnb-modal-title-row">
+                <FileText size={20} className="cnb-modal-icon" />
+                <div>
+                  <h3 className="cnb-modal-title">Cargar Documento CNB</h3>
+                  <p className="cnb-modal-subtitle">Procesar currículum nacional base en formato PDF</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="cnb-modal-close-btn"
+                onClick={() => !isProcessing && setIsModalOpen(false)}
+                disabled={isProcessing}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadAndProcess} className="cnb-modal-form">
+              <div className="cnb-form-group">
+                <label className="cnb-form-label">
+                  Nombre de la Carrera <span className="required-star">*</span>
+                </label>
+                <input
+                  type="text"
+                  className="cnb-form-input"
+                  placeholder="Ej: Bachillerato en Ciencias y Letras"
+                  value={nombreCarrera}
+                  onChange={(e) => setNombreCarrera(e.target.value)}
+                  disabled={isProcessing}
+                  required
+                />
+              </div>
+
+              <div className="cnb-form-group">
+                <label className="cnb-form-label">
+                  Documento PDF <span className="required-star">*</span>
+                </label>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+
+                <div
+                  className={`cnb-dropzone ${selectedFile ? 'has-file' : ''}`}
+                  onClick={() => !isProcessing && fileInputRef.current?.click()}
+                >
+                  {selectedFile ? (
+                    <div className="selected-file-info">
+                      <FileText size={26} className="file-icon" />
+                      <div className="file-details">
+                        <span className="file-name">{selectedFile.name}</span>
+                        <span className="file-size">({(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="change-file-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFile(null);
+                        }}
+                        disabled={isProcessing}
+                      >
+                        Cambiar
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="dropzone-placeholder">
+                      <Upload size={26} className="upload-icon" />
+                      <span className="upload-text">Haz clic aquí para seleccionar el archivo PDF</span>
+                      <span className="upload-hint">Formato admitido: .PDF (máx. 10 MB)</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="cnb-modal-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isProcessing}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-process-cnb"
+                  disabled={!selectedFile || !nombreCarrera.trim() || isProcessing}
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 size={16} className="spin-loader" />
+                      <span>Procesando PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload size={16} />
+                      <span>Procesar PDF</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -175,6 +370,27 @@ export const Navbar: React.FC = () => {
           display: flex;
           align-items: center;
           gap: 1rem;
+        }
+
+        .btn-upload-cnb {
+          background: #eff6ff;
+          color: #1d4ed8;
+          border: 1px solid #bfdbfe;
+          padding: 0.45rem 0.85rem;
+          border-radius: 0.5rem;
+          font-size: 0.85rem;
+          font-weight: 600;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .btn-upload-cnb:hover {
+          background: #dbeafe;
+          border-color: #2563eb;
+          transform: translateY(-1px);
         }
 
         .btn-hamburger-menu {
@@ -250,195 +466,266 @@ export const Navbar: React.FC = () => {
           font-weight: 600;
         }
 
-        .brand-logo {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-        }
-
-        .logo-icon {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
-        }
-
-        .logo-text {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .brand-title {
-          font-family: var(--font-heading);
-          font-size: 1.35rem;
-          font-weight: 700;
+        .mobile-cnb-btn {
           color: #1d4ed8;
-          line-height: 1.1;
-          letter-spacing: -0.02em;
+          font-weight: 600;
+          background: #eff6ff;
+          border-color: #bfdbfe;
         }
 
-        .server-status {
-          display: flex;
-          align-items: center;
-          gap: 0.35rem;
-          padding: 0.35rem 0.75rem;
-          border-radius: 9999px;
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-
-        .server-status.online {
-          background-color: #ecfdf5;
-          color: #047857;
-          border: 1px solid #a7f3d0;
-        }
-
-        .server-status.offline {
-          background-color: #fef2f2;
-          color: #dc2626;
-          border: 1px solid #fecaca;
-        }
-
-        .thread-selector-container {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          background: #f8fafc;
-          padding: 0.25rem 0.5rem;
-          border-radius: 0.6rem;
-          border: 1px solid #e2e8f0;
-        }
-
-        .thread-select {
-          border: none;
-          background: transparent;
-          font-family: inherit;
-          font-size: 0.875rem;
-          color: #0f172a;
-          font-weight: 500;
-          outline: none;
-          cursor: pointer;
-        }
-
-        .user-profile-chip {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.35rem 0.75rem;
-          background: #f8fafc;
-          border: 1px solid #e2e8f0;
-          border-radius: 9999px;
-        }
-
-        .user-avatar {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid #2563eb;
-        }
-
-        .user-avatar-fallback {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
-          background: #1d4ed8;
-          color: #ffffff;
+        /* Modal Styles */
+        .cnb-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(15, 23, 42, 0.5);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.8rem;
-          font-weight: 600;
+          z-index: 99999;
+          padding: 1rem;
+          animation: fadeInModal 0.2s ease-out;
         }
 
-        .user-info {
+        @keyframes fadeInModal {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        .cnb-modal-card {
+          background: #ffffff;
+          border-radius: 0.85rem;
+          width: 100%;
+          max-width: 500px;
+          box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.25);
+          border: 1px solid #e2e8f0;
+          overflow: hidden;
+          animation: scaleUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes scaleUpModal {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+
+        .cnb-modal-header {
           display: flex;
-          flex-direction: column;
+          align-items: center;
+          justify-content: space-between;
+          padding: 1.25rem 1.5rem;
+          border-bottom: 1px solid #e2e8f0;
+          background: #f8fafc;
         }
 
-        .user-name {
-          font-size: 0.85rem;
-          font-weight: 600;
+        .cnb-modal-title-row {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .cnb-modal-icon {
+          color: #1d4ed8;
+        }
+
+        .cnb-modal-title {
+          font-family: var(--font-heading);
+          font-size: 1.15rem;
+          font-weight: 700;
           color: #0f172a;
-          line-height: 1.2;
+          margin: 0;
         }
 
-        .btn-icon-logout {
+        .cnb-modal-subtitle {
+          font-size: 0.8rem;
+          color: #64748b;
+          margin: 0.15rem 0 0 0;
+        }
+
+        .cnb-modal-close-btn {
           background: transparent;
           border: none;
           color: #64748b;
           cursor: pointer;
-          padding: 0.3rem;
-          border-radius: 0.375rem;
-          transition: all 0.2s;
+          padding: 0.35rem;
+          border-radius: 0.35rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s ease;
         }
 
-        .btn-icon-logout:hover {
-          color: #ef4444;
-          background: #fee2e2;
+        .cnb-modal-close-btn:hover {
+          background: #e2e8f0;
+          color: #0f172a;
         }
 
-        /* Mobile & Tablet Responsive Rules */
-        @media (max-width: 900px) {
-          .navbar {
-            height: auto;
-            min-height: 56px;
-            padding: 0.5rem 0.75rem;
-            gap: 0.4rem;
-          }
+        .cnb-modal-form {
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1.25rem;
+        }
 
+        .cnb-form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 0.4rem;
+        }
+
+        .cnb-form-label {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #334155;
+        }
+
+        .required-star {
+          color: #dc2626;
+        }
+
+        .cnb-form-input {
+          width: 100%;
+          padding: 0.65rem 0.85rem;
+          border: 1px solid #cbd5e1;
+          border-radius: 0.5rem;
+          font-size: 0.9rem;
+          color: #0f172a;
+          outline: none;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cnb-form-input:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .cnb-dropzone {
+          border: 2px dashed #cbd5e1;
+          border-radius: 0.65rem;
+          padding: 1.5rem 1rem;
+          text-align: center;
+          cursor: pointer;
+          background: #f8fafc;
+          transition: all 0.2s ease;
+        }
+
+        .cnb-dropzone:hover {
+          border-color: #2563eb;
+          background: #eff6ff;
+        }
+
+        .cnb-dropzone.has-file {
+          border-style: solid;
+          border-color: #bfdbfe;
+          background: #eff6ff;
+          padding: 1rem;
+        }
+
+        .dropzone-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        .upload-icon {
+          color: #1d4ed8;
+        }
+
+        .upload-text {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #1e40af;
+        }
+
+        .upload-hint {
+          font-size: 0.75rem;
+          color: #64748b;
+        }
+
+        .selected-file-info {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          width: 100%;
+        }
+
+        .file-icon {
+          color: #1d4ed8;
+          flex-shrink: 0;
+        }
+
+        .file-details {
+          display: flex;
+          flex-direction: column;
+          text-align: left;
+          flex: 1;
+          min-width: 0;
+        }
+
+        .file-name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: #0f172a;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .file-size {
+          font-size: 0.75rem;
+          color: #64748b;
+        }
+
+        .change-file-btn {
+          background: #ffffff;
+          border: 1px solid #cbd5e1;
+          color: #334155;
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 0.3rem 0.6rem;
+          border-radius: 0.35rem;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+
+        .change-file-btn:hover {
+          background: #f1f5f9;
+          color: #0f172a;
+        }
+
+        .cnb-modal-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 0.75rem;
+          margin-top: 0.5rem;
+        }
+
+        .btn-process-cnb {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+        }
+
+        .spin-loader {
+          animation: spin 1s linear infinite;
+        }
+
+        @media (max-width: 768px) {
           .btn-hamburger-menu {
-            display: inline-flex !important;
+            display: flex;
           }
-
-          .navbar-left, .navbar-right {
-            gap: 0.4rem;
-          }
-
-          .navbar-center, .thread-selector-container {
-            display: none !important;
-          }
-
-          .brand-logo {
-            display: none !important;
-          }
-
-          .server-status span {
+          .navbar-center {
             display: none;
           }
-
-          .server-status {
-            padding: 0.25rem 0.45rem;
-          }
-
-          .thread-select {
-            max-width: 110px;
-            font-size: 0.8rem;
-          }
-
-          .user-name {
+          .cnb-btn-text {
             display: none;
           }
-
-          .user-profile-chip {
-            padding: 0.2rem 0.35rem;
-            background: transparent;
-            border: none;
-          }
-
-          .btn-icon-logout {
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            background: #fee2e2 !important;
-            color: #dc2626 !important;
+          .btn-upload-cnb {
             padding: 0.45rem;
-            border-radius: 0.5rem;
-            flex-shrink: 0;
           }
         }
       `}</style>

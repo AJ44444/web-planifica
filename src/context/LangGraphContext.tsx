@@ -30,16 +30,9 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [activeViewTab, setActiveViewTab] = useState<ViewTabType>('chat');
   const [notificationBanner, setNotificationBanner] = useState<NotificationBannerState | null>(null);
 
-  const showNotificationBanner = (
-    msg: string, 
-    type: NotificationBannerState['type'] = 'info', 
-    idSubarea?: string
-  ) => {
+  const showNotificationBanner = (msg: string) => {
     setNotificationBanner({
-      id: `notif_${Date.now()}`,
       message: msg,
-      type,
-      idSubarea,
     });
   };
 
@@ -48,7 +41,7 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   const showErrorNotification = (msg: string) => {
-    showNotificationBanner(msg, 'error');
+    window.alert(msg);
   };
 
   const checkHealth = async () => {
@@ -71,24 +64,8 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setMessages([]);
 
         unsubscribeNotifications = subscribeToNotifications((notification) => {
-          if (notification.status === 'connected') {
-            return;
-          }
-
-          if (notification.status === 'in_progress') {
-            showNotificationBanner(
-              'Procesando secuencia didáctica/subárea...',
-              'in_progress',
-              notification.id_subarea
-            );
-          } else if (notification.status === 'completed') {
-            showNotificationBanner(
-              'Secuencia didáctica completada exitosamente.',
-              'completed',
-              notification.id_subarea
-            );
-          } else if (notification.message) {
-            showNotificationBanner(notification.message, 'info', notification.id_subarea);
+          if (notification.message) {
+            showNotificationBanner(notification.message);
           }
         });
       }

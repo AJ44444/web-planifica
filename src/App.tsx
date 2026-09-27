@@ -15,9 +15,9 @@ import { ThreadHistoryView } from './components/Visualizers/ThreadHistoryView';
 import { PlanificationsListView } from './components/Visualizers/PlanificationsListView';
 import { LoginModal } from './components/LoginModal';
 
-import { getLessonPlanDetail, generateUploadUrl, uploadFileToPresignedUrl } from './services/api';
+import { getLessonPlanDetail } from './services/api';
 import type { LessonPlanDetailResponse } from './types';
-import { Send, BookOpen, Paperclip, FileText, X, Loader2 } from 'lucide-react';
+import { Send, BookOpen } from 'lucide-react';
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -36,11 +36,8 @@ const MainWorkspaceContent: React.FC = () => {
 
   const [selectedPlanDetail, setSelectedPlanDetail] = useState<LessonPlanDetailResponse | null>(null);
   const [inputPrompt, setInputPrompt] = useState('');
-  const [attachedFile, setAttachedFile] = useState<{ file: File; key: string } | null>(null);
-  const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLoadVisualizers = async (planId: string): Promise<boolean> => {
     try {
@@ -78,52 +75,13 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      e.target.value = '';
-
-      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-      const MAX_SIZE_BYTES = 10 * 1024 * 1024;
-
-      if (!isPdf) {
-        showErrorNotification('Solo se admiten archivos en formato PDF.');
-        return;
-      }
-
-      if (file.size > MAX_SIZE_BYTES) {
-        showErrorNotification('El archivo supera el tamaño máximo permitido de 10 MB.');
-        return;
-      }
-
-      setIsUploadingFile(true);
-      try {
-        const presignedData = await generateUploadUrl();
-        await uploadFileToPresignedUrl(presignedData, file);
-        setAttachedFile({
-          file,
-          key: presignedData.file_key,
-        });
-      } catch (err: any) {
-        showErrorNotification(err?.message || 'Error al subir el archivo. Intenta de nuevo.');
-        setAttachedFile(null);
-      } finally {
-        setIsUploadingFile(false);
-      }
-    }
-  };
-
   const handleSend = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if ((!inputPrompt.trim() && !attachedFile) || isStreaming || isUploadingFile) return;
+    if (!inputPrompt.trim() || isStreaming) return;
     
-    let textToSend = inputPrompt.trim();
-    if (attachedFile) {
-      textToSend = textToSend ? `${textToSend}\n\n${attachedFile.key}` : attachedFile.key;
-    }
+    const textToSend = inputPrompt.trim();
 
     setInputPrompt('');
-    setAttachedFile(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -167,54 +125,7 @@ const MainWorkspaceContent: React.FC = () => {
                 )}
 
                 <form className="chat-input-form" onSubmit={handleSend}>
-                  {(attachedFile || isUploadingFile) && (
-                    <div className="chat-attachment-chip">
-                      {isUploadingFile ? (
-                        <>
-                          <Loader2 size={16} className="chip-icon spin" />
-                          <span className="chip-name">Subiendo archivo...</span>
-                        </>
-                      ) : (
-                        <>
-                          <FileText size={16} className="chip-icon" />
-                          <span className="chip-name">{attachedFile?.file.name}</span>
-                          <span className="chip-size">
-                            ({((attachedFile?.file.size || 0) / (1024 * 1024)).toFixed(2)} MB)
-                          </span>
-                          <button
-                            type="button"
-                            className="chip-remove-btn"
-                            onClick={() => setAttachedFile(null)}
-                            title="Quitar archivo adjunto"
-                          >
-                            <X size={14} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  )}
-
                   <div className="chat-input-row">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      accept=".pdf"
-                      onChange={handleFileSelect}
-                      style={{ display: 'none' }}
-                    />
-                    <button
-                      type="button"
-                      className="btn-attach-file"
-                      onClick={() => fileInputRef.current?.click()}
-                      title="Adjuntar PDF del CNB"
-                      disabled={isStreaming || isUploadingFile}
-                    >
-                      {isUploadingFile ? (
-                        <Loader2 size={18} className="spin" />
-                      ) : (
-                        <Paperclip size={18} />
-                      )}
-                    </button>
 
                     <textarea
                       ref={textareaRef}
@@ -240,12 +151,12 @@ const MainWorkspaceContent: React.FC = () => {
                         }
                       }}
                       rows={1}
-                      disabled={isStreaming || isUploadingFile}
+                      disabled={isStreaming}
                     />
                     <button
                       type="submit"
                       className="btn btn-primary send-btn"
-                      disabled={(!inputPrompt.trim() && !attachedFile) || isStreaming || isUploadingFile}
+                      disabled={!inputPrompt.trim() || isStreaming}
                     >
                       <Send size={18} />
                       <span>Enviar</span>
