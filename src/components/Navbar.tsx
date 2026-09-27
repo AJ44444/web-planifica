@@ -157,10 +157,10 @@ export const Navbar: React.FC = () => {
           type="button"
           className="btn-upload-cnb"
           onClick={() => setIsModalOpen(true)}
-          title="Cargar documento CNB (PDF)"
+          title="Subir documento CNB (PDF)"
         >
-          <FileText size={16} />
-          <span className="cnb-btn-text">Cargar CNB</span>
+          <Upload size={16} />
+          <span className="cnb-btn-text">Subir CNB</span>
         </button>
 
         {user && (
@@ -223,17 +223,6 @@ export const Navbar: React.FC = () => {
               <History size={18} />
               <span>Historial</span>
             </button>
-
-            <button
-              className="mobile-nav-item mobile-cnb-btn"
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                setIsModalOpen(true);
-              }}
-            >
-              <FileText size={18} />
-              <span>Cargar Documento CNB</span>
-            </button>
           </nav>
         </div>
       )}
@@ -243,9 +232,9 @@ export const Navbar: React.FC = () => {
           <div className="cnb-modal-card" onClick={(e) => e.stopPropagation()}>
             <div className="cnb-modal-header">
               <div className="cnb-modal-title-row">
-                <FileText size={20} className="cnb-modal-icon" />
+                <Upload size={20} className="cnb-modal-icon" />
                 <div>
-                  <h3 className="cnb-modal-title">Cargar Documento CNB</h3>
+                  <h3 className="cnb-modal-title">Subir Documento</h3>
                   <p className="cnb-modal-subtitle">Procesar currículum nacional base en formato PDF</p>
                 </div>
               </div>

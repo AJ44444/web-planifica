@@ -1035,4 +1035,12 @@ h4 { font-size: 1rem; line-height: 1.5rem; }
     border-radius: 0.5rem;
     flex-shrink: 0;
   }
+
+  .cnb-btn-text {
+    display: none;
+  }
+
+  .btn-upload-cnb {
+    padding: 0.45rem;
+  }
 }
