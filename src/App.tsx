@@ -202,7 +202,7 @@ const MainWorkspaceContent: React.FC = () => {
         .app-main-layout {
           display: flex;
           flex: 1;
-          height: calc(100vh - 68px);
+          min-height: 0;
           overflow: hidden;
         }
 
@@ -412,7 +412,7 @@ const MainWorkspaceContent: React.FC = () => {
         /* Responsive Mobile & Tablet Rules */
         @media (max-width: 900px) {
           .app-main-layout {
-            height: calc(100vh - 60px);
+            min-height: 0;
           }
 
           .workspace-scroll-area {

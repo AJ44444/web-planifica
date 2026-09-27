@@ -30,13 +30,15 @@ export const NotificationBanner: React.FC = () => {
       <style>{`
         .top-notification-banner {
           width: 100%;
-          border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          background: #eff6ff;
+          color: #1d4ed8;
+          border-bottom: 1px solid #bfdbfe;
           font-family: var(--font-heading, inherit);
           font-size: 0.85rem;
           line-height: 1.4;
           animation: slideDownBanner 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           z-index: 9999;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+          box-shadow: 0 2px 10px rgba(29, 78, 216, 0.06);
           flex-shrink: 0;
         }
 
@@ -71,39 +73,21 @@ export const NotificationBanner: React.FC = () => {
 
         .banner-icon {
           flex-shrink: 0;
-        }
-
-        .spin-icon {
-          animation: bannerSpin 1s linear infinite;
-        }
-
-        @keyframes bannerSpin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          color: #1d4ed8;
         }
 
         .banner-message {
-          font-weight: 500;
+          font-weight: 600;
+          color: #1e40af;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        .banner-subarea-chip {
-          font-family: monospace;
-          font-size: 0.725rem;
-          background: rgba(255, 255, 255, 0.25);
-          border: 1px solid rgba(255, 255, 255, 0.35);
-          padding: 0.15rem 0.45rem;
-          border-radius: 0.3rem;
-          font-weight: 600;
-          flex-shrink: 0;
-        }
-
         .banner-close-btn {
-          background: rgba(255, 255, 255, 0.18);
-          border: 1px solid rgba(255, 255, 255, 0.25);
-          color: currentColor;
+          background: #dbeafe;
+          border: 1px solid #bfdbfe;
+          color: #1d4ed8;
           border-radius: 0.35rem;
           padding: 0.25rem;
           display: flex;
@@ -115,20 +99,9 @@ export const NotificationBanner: React.FC = () => {
         }
 
         .banner-close-btn:hover {
-          background: rgba(255, 255, 255, 0.32);
+          background: #bfdbfe;
+          color: #1e40af;
           transform: scale(1.05);
-        }
-
-        /* All notification banners use strictly blue color theme */
-        .top-notification-banner,
-        .banner-in_progress, 
-        .banner-info,
-        .banner-completed, 
-        .banner-success,
-        .banner-error,
-        .banner-warning {
-          background: linear-gradient(90deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
-          color: #ffffff;
         }
 
         @media (max-width: 640px) {
