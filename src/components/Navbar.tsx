@@ -372,6 +372,135 @@ export const Navbar: React.FC = () => {
           gap: 1rem;
         }
 
+        .brand-logo {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+        }
+
+        .logo-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 0.5rem;
+          background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(29, 78, 216, 0.25);
+          flex-shrink: 0;
+        }
+
+        .brand-title {
+          font-family: var(--font-heading);
+          font-size: 1.2rem;
+          font-weight: 700;
+          color: #0f172a;
+          letter-spacing: -0.02em;
+        }
+
+        .server-status {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.25rem 0.6rem;
+          border-radius: 9999px;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .server-status.online {
+          background: #ecfdf5;
+          color: #059669;
+          border: 1px solid #a7f3d0;
+        }
+
+        .server-status.offline {
+          background: #fef2f2;
+          color: #dc2626;
+          border: 1px solid #fecaca;
+        }
+
+        .thread-selector-container {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
+        .thread-select {
+          padding: 0.45rem 0.85rem;
+          border-radius: 0.5rem;
+          border: 1px solid #cbd5e1;
+          background-color: #ffffff;
+          color: #0f172a;
+          font-size: 0.85rem;
+          font-weight: 500;
+          outline: none;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          max-width: 220px;
+          text-overflow: ellipsis;
+        }
+
+        .thread-select:focus {
+          border-color: #2563eb;
+          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .user-profile-chip {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          padding: 0.25rem 0.6rem 0.25rem 0.25rem;
+          background: #f8fafc;
+          border: 1px solid #e2e8f0;
+          border-radius: 9999px;
+        }
+
+        .user-avatar-fallback {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: #1d4ed8;
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          font-weight: 700;
+          flex-shrink: 0;
+        }
+
+        .user-info {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .user-name {
+          font-size: 0.825rem;
+          font-weight: 600;
+          color: #0f172a;
+          white-space: nowrap;
+        }
+
+        .btn-icon-logout {
+          background: transparent;
+          border: none;
+          color: #64748b;
+          cursor: pointer;
+          padding: 0.25rem;
+          border-radius: 0.35rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+        }
+
+        .btn-icon-logout:hover {
+          background: #fee2e2;
+          color: #dc2626;
+        }
+
         .btn-upload-cnb {
           background: #eff6ff;
           color: #1d4ed8;
