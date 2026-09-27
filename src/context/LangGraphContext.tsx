@@ -64,9 +64,16 @@ export const LangGraphProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         setMessages([]);
 
         unsubscribeNotifications = subscribeToNotifications((notification) => {
-          if (notification.message) {
-            showNotificationBanner(notification.message);
+          const msg = notification.message?.trim();
+          if (!msg) return;
+
+          const isInitialConnectionMsg = msg.toLowerCase().includes('sse notification stream active');
+
+          if (isInitialConnectionMsg) {
+            return;
           }
+
+          showNotificationBanner(msg);
         });
       }
     };
