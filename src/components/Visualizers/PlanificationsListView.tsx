@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getLessonPlans } from '../../services/api';
 import { formatGMT6Date } from '../../utils/dateFormatter';
 import { useLangGraph } from '../../context/LangGraphContext';
@@ -15,7 +15,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
 
-  const fetchPlans = async (currentPage: number) => {
+  const fetchPlans = useCallback(async (currentPage: number) => {
     setIsLoading(true);
     try {
       const response = await getLessonPlans(currentPage, 10);
@@ -33,20 +33,17 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [showErrorNotification]);
 
   useEffect(() => {
     fetchPlans(page);
-  }, [page]);
+  }, [page, fetchPlans]);
 
   const handleLoadVisualizers = async (planId: string) => {
     setLoadingPlanId(planId);
     try {
       if (onLoadVisualizers) {
-        const success = await onLoadVisualizers(planId);
-        if (!success) {
-          showErrorNotification('Ocurrió un error al poblar los visualizadores.');
-        }
+        await onLoadVisualizers(planId);
       }
     } finally {
       setLoadingPlanId(null);

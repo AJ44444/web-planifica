@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import type { AgentStatusPanelProps } from '../types';
 
-export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, onSelectTab }) => {
+// ponytail: Memoize sidebar to avoid re-rendering while chat messages stream
+export const AgentStatusPanel = React.memo<AgentStatusPanelProps>(({ activeTab, onSelectTab }) => {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
   return (
@@ -203,4 +204,4 @@ export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, o
       `}</style>
     </aside>
   );
-};
+});

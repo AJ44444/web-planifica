@@ -8,16 +8,24 @@ import { Navbar } from './components/Navbar';
 import { NotificationBanner } from './components/NotificationBanner';
 import { AgentStatusPanel } from './components/AgentStatusPanel';
 import { ChatMessage } from './components/ChatMessage';
-import { LessonPlanView } from './components/Visualizers/LessonPlanView';
-import { RubricView } from './components/Visualizers/RubricView';
-import { MultimodalView } from './components/Visualizers/MultimodalView';
-import { ThreadHistoryView } from './components/Visualizers/ThreadHistoryView';
-import { PlanificationsListView } from './components/Visualizers/PlanificationsListView';
-import { LoginModal } from './components/LoginModal';
+
+// ponytail: Lazy-load visualizers and login modal so the initial bundle only contains Chat and core layout
+const LessonPlanView = React.lazy(() => import('./components/Visualizers/LessonPlanView').then(m => ({ default: m.LessonPlanView })));
+const RubricView = React.lazy(() => import('./components/Visualizers/RubricView').then(m => ({ default: m.RubricView })));
+const MultimodalView = React.lazy(() => import('./components/Visualizers/MultimodalView').then(m => ({ default: m.MultimodalView })));
+const ThreadHistoryView = React.lazy(() => import('./components/Visualizers/ThreadHistoryView').then(m => ({ default: m.ThreadHistoryView })));
+const PlanificationsListView = React.lazy(() => import('./components/Visualizers/PlanificationsListView').then(m => ({ default: m.PlanificationsListView })));
+const LoginModal = React.lazy(() => import('./components/LoginModal').then(m => ({ default: m.LoginModal })));
 
 import { getLessonPlanDetail } from './services/api';
 import type { LessonPlanDetailResponse } from './types';
-import { Send, BookOpen } from 'lucide-react';
+import { Send, BookOpen, Loader2 } from 'lucide-react';
+
+const ViewFallback = (
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, minHeight: '300px' }}>
+    <Loader2 size={32} className="spin-loader" />
+  </div>
+);
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -51,20 +59,25 @@ const MainWorkspaceContent: React.FC = () => {
     }
   };
 
-  const scrollToBottom = () => {
-    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    chatBottomRef.current?.scrollIntoView({ behavior });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // ponytail: Use instant auto-scroll during live streaming to avoid browser scroll animation thrashing
+    scrollToBottom(isStreaming ? 'auto' : 'smooth');
+  }, [messages, isStreaming]);
 
   if (isLoading) {
     return null;
   }
 
   if (!isAuthenticated) {
-    return <LoginModal />;
+    return (
+      <React.Suspense fallback={ViewFallback}>
+        <LoginModal />
+      </React.Suspense>
+    );
   }
 
   const handleTabSelect = (tab: ViewTabType) => {
@@ -166,29 +179,31 @@ const MainWorkspaceContent: React.FC = () => {
               </div>
             )}
 
-            {activeViewTab === 'planifications' && <PlanificationsListView onLoadVisualizers={handleLoadVisualizers} />}
-            {activeViewTab === 'plan' && (
-              <LessonPlanView 
-                plan={selectedPlanDetail?.planificacion} 
-                rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
-                multimodals={selectedPlanDetail?.recursos_multimodales} 
-              />
-            )}
-            {activeViewTab === 'rubric' && (
-              <RubricView 
-                plan={selectedPlanDetail?.planificacion}
-                rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
-                multimodals={selectedPlanDetail?.recursos_multimodales} 
-              />
-            )}
-            {activeViewTab === 'multimodal' && (
-              <MultimodalView 
-                plan={selectedPlanDetail?.planificacion}
-                rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
-                multimodals={selectedPlanDetail?.recursos_multimodales} 
-              />
-            )}
-            {activeViewTab === 'history' && <ThreadHistoryView />}
+            <React.Suspense fallback={ViewFallback}>
+              {activeViewTab === 'planifications' && <PlanificationsListView onLoadVisualizers={handleLoadVisualizers} />}
+              {activeViewTab === 'plan' && (
+                <LessonPlanView 
+                  plan={selectedPlanDetail?.planificacion} 
+                  rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
+                  multimodals={selectedPlanDetail?.recursos_multimodales} 
+                />
+              )}
+              {activeViewTab === 'rubric' && (
+                <RubricView 
+                  plan={selectedPlanDetail?.planificacion}
+                  rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
+                  multimodals={selectedPlanDetail?.recursos_multimodales} 
+                />
+              )}
+              {activeViewTab === 'multimodal' && (
+                <MultimodalView 
+                  plan={selectedPlanDetail?.planificacion}
+                  rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
+                  multimodals={selectedPlanDetail?.recursos_multimodales} 
+                />
+              )}
+              {activeViewTab === 'history' && <ThreadHistoryView />}
+            </React.Suspense>
           </div>
         </main>
       </div>

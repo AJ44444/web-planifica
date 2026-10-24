@@ -3,6 +3,22 @@ import { formatGMT6Time } from '../utils/dateFormatter';
 
 const API_BASE_URL = import.meta.env.VITE_LANGGRAPH_API_URL;
 
+// ponytail: Centralized fetch wrapper that sends session cookies and automatically catches 401/403 to trigger re-auth without an extra verify roundtrip
+async function apiFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const response = await fetch(url, {
+    credentials: 'include',
+    ...options,
+  });
+
+  if (response.status === 401 || response.status === 403) {
+    window.dispatchEvent(new Event('auth:unauthorized'));
+    throw new Error('Sesión no válida o expirada');
+  }
+
+  return response;
+}
+
 export async function loginToServer(idToken: string): Promise<any> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
@@ -19,13 +35,11 @@ export async function loginToServer(idToken: string): Promise<any> {
 }
 
 export async function verifyServerSession(): Promise<any> {
-  const response = await fetch(`${API_BASE_URL}/auth/verify`, {
+  const response = await apiFetch('/auth/verify', {
     method: 'GET',
-    credentials: 'include',
   });
 
   if (!response.ok) {
-    window.dispatchEvent(new Event('auth:unauthorized'));
     throw new Error('Sesión no válida o expirada');
   }
 
@@ -56,12 +70,9 @@ export async function checkServerHealth(): Promise<boolean> {
 }
 
 export async function createThread(): Promise<string> {
-  await verifyServerSession();
-
-  const response = await fetch(`${API_BASE_URL}/threads`, {
+  const response = await apiFetch('/threads', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify({}),
   });
 
@@ -78,12 +89,9 @@ export async function createThread(): Promise<string> {
 }
 
 export async function getThreads(): Promise<Thread[]> {
-  await verifyServerSession();
-
-  const response = await fetch(`${API_BASE_URL}/threads/search`, {
+  const response = await apiFetch('/threads/search', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
     body: JSON.stringify({ limit: 100, metadata: {} }),
   });
 
@@ -106,11 +114,8 @@ export async function getThreads(): Promise<Thread[]> {
 
 export async function deleteThread(threadId: string): Promise<boolean> {
   try {
-    await verifyServerSession();
-
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}`, {
+    const response = await apiFetch(`/threads/${threadId}`, {
       method: 'DELETE',
-      credentials: 'include',
     });
     return response.ok;
   } catch {
@@ -120,11 +125,8 @@ export async function deleteThread(threadId: string): Promise<boolean> {
 
 export async function getThreadHistory(threadId: string): Promise<ChatMessage[]> {
   try {
-    await verifyServerSession();
-
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/history`, {
+    const response = await apiFetch(`/threads/${threadId}/history`, {
       method: 'GET',
-      credentials: 'include',
     });
     if (response.ok) {
       const data = await response.json();
@@ -174,12 +176,9 @@ export async function streamLangGraphRun(
   let fullContent = '';
 
   try {
-    await verifyServerSession();
-
-    const response = await fetch(`${API_BASE_URL}/threads/${threadId}/runs/stream`, {
+    const response = await apiFetch(`/threads/${threadId}/runs/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         assistant_id: 'supervisor',
         input: {
@@ -204,6 +203,7 @@ export async function streamLangGraphRun(
       const lines = buffer.split('\n');
       buffer = lines.pop() || '';
 
+      let chunkBatch = '';
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith(':')) continue;
@@ -234,15 +234,19 @@ export async function streamLangGraphRun(
                 const textChunk = typeof targetMsg.content === 'string' ? targetMsg.content : JSON.stringify(targetMsg.content);
                 if (textChunk) {
                   fullContent += textChunk;
-                  callbacks.onToken(textChunk);
+                  chunkBatch += textChunk;
                 }
               }
             }
           } catch {
             fullContent += dataStr;
-            callbacks.onToken(dataStr);
+            chunkBatch += dataStr;
           }
         }
+      }
+      // ponytail: Batch token dispatch per stream buffer chunk rather than per line, saving redundant React renders
+      if (chunkBatch) {
+        callbacks.onToken(chunkBatch);
       }
     }
 
@@ -267,11 +271,8 @@ export async function streamLangGraphRun(
 }
 
 export async function getLessonPlans(page: number = 1, limit: number = 10): Promise<any> {
-  await verifyServerSession();
-
-  const response = await fetch(`${API_BASE_URL}/api/lesson-plans?page=${page}&limit=${limit}`, {
+  const response = await apiFetch(`/api/lesson-plans?page=${page}&limit=${limit}`, {
     method: 'GET',
-    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -282,11 +283,8 @@ export async function getLessonPlans(page: number = 1, limit: number = 10): Prom
 }
 
 export async function getLessonPlanDetail(id: string): Promise<any> {
-  await verifyServerSession();
-
-  const response = await fetch(`${API_BASE_URL}/api/lesson-plans/${id}`, {
+  const response = await apiFetch(`/api/lesson-plans/${id}`, {
     method: 'GET',
-    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -297,11 +295,8 @@ export async function getLessonPlanDetail(id: string): Promise<any> {
 }
 
 export async function generateUploadUrl(): Promise<PresignedUrlResponse> {
-  await verifyServerSession();
-
-  const response = await fetch(`${API_BASE_URL}/api/generate-url`, {
+  const response = await apiFetch('/api/generate-url', {
     method: 'GET',
-    credentials: 'include',
   });
 
   if (!response.ok) {
@@ -337,14 +332,11 @@ export async function uploadFileToPresignedUrl(
 }
 
 export async function processPdf(fileKey: string, nombreCarrera: string): Promise<ProcessPdfResponse> {
-  await verifyServerSession();
-
-  const response = await fetch(`${API_BASE_URL}/api/process-pdf`, {
+  const response = await apiFetch('/api/process-pdf', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       file_key: fileKey,
       nombre_carrera: nombreCarrera,
@@ -371,15 +363,12 @@ export function subscribeToNotifications(
 
   const connect = async () => {
     try {
-      await verifyServerSession();
-
-      const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+      const response = await apiFetch('/api/notifications', {
         method: 'GET',
         headers: {
           'Accept': 'text/event-stream',
           'Cache-Control': 'no-cache',
         },
-        credentials: 'include',
         signal: controller.signal,
       });
 

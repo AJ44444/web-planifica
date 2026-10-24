@@ -5,7 +5,8 @@ import type { ChatMessageProps } from '../types';
 import { Bot } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }) => {
+// ponytail: Memoize ChatMessage to prevent non-streaming messages from re-parsing markdown on every token
+export const ChatMessage = React.memo<ChatMessageProps>(({ message, isStreaming }) => {
   const { user } = useAuth();
   const isUser = message.role === 'user';
   const displayContent = message.content;
@@ -263,4 +264,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming }
       `}</style>
     </div>
   );
-};
+}, (prev, next) => (
+  prev.isStreaming === next.isStreaming &&
+  prev.message.id === next.message.id &&
+  prev.message.content === next.message.content
+));

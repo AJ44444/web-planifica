@@ -1,3 +1,21 @@
+// ponytail: Cache Intl.DateTimeFormat instances once at module level to avoid expensive ICU instantiation per item
+const gmt6DateFormat = new Intl.DateTimeFormat('es-GT', {
+  timeZone: 'America/Guatemala',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+});
+
+const gmt6TimeFormat = new Intl.DateTimeFormat('es-GT', {
+  timeZone: 'America/Guatemala',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: true,
+});
+
 function parseDate(dateInput?: string): { date: Date | null; raw: string } {
   if (!dateInput || typeof dateInput !== 'string') {
     return { date: null, raw: dateInput ? String(dateInput) : '' };
@@ -22,26 +40,11 @@ function parseDate(dateInput?: string): { date: Date | null; raw: string } {
 export function formatGMT6Date(dateInput?: string): string {
   const { date, raw } = parseDate(dateInput);
   if (!date) return raw;
-
-  return new Intl.DateTimeFormat('es-GT', {
-    timeZone: 'America/Guatemala',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date);
+  return gmt6DateFormat.format(date);
 }
 
 export function formatGMT6Time(dateInput?: string): string {
   const { date, raw } = parseDate(dateInput);
   if (!date) return raw;
-
-  return new Intl.DateTimeFormat('es-GT', {
-    timeZone: 'America/Guatemala',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  }).format(date);
+  return gmt6TimeFormat.format(date);
 }
