@@ -1,10 +1,11 @@
 import React from 'react';
-import { ClipboardCheck } from 'lucide-react';
+import { ClipboardCheck, FileDown, Layers } from 'lucide-react';
 import type { InstrumentoEvaluacion, CriterioEvaluacion, VisualizadoresData } from '../../types';
 import { useLangGraph } from '../../context/LangGraphContext';
+import { exportToWord } from '../../utils/wordExporter';
 
-export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
-  const { setActiveViewTab } = useLangGraph();
+export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multimodals }) => {
+  const { setActiveViewTab, showErrorNotification } = useLangGraph();
   const rawTools = rubrics || [];
   const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
     tipo: t.tipo,
@@ -12,77 +13,6 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
     escala: t.instrumento_generado?.escala || [],
     criterios: t.instrumento_generado?.criterios || [],
   }));
-
-  if (tools.length === 0) {
-    return (
-      <div className="empty-visualizer-container">
-        <div className="empty-visualizer-content">
-          <h2 className="empty-visualizer-title">
-            No se ha seleccionado una planificación o la planificación no contiene herramientas de evaluación
-          </h2>
-          <button
-            className="btn-go-planifications"
-            onClick={() => setActiveViewTab('planifications')}
-          >
-            Ver planificaciones
-          </button>
-        </div>
-
-        <style>{`
-          .empty-visualizer-container {
-            background: #ffffff;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            padding: 4rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 20px -2px rgba(29, 78, 216, 0.08);
-            min-height: 420px;
-          }
-
-          .empty-visualizer-content {
-            max-width: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.25rem;
-          }
-
-          .empty-visualizer-title {
-            font-family: var(--font-heading);
-            font-size: 1.25rem;
-            font-weight: 400;
-            color: #64748b;
-            line-height: 1.4;
-            margin: 0;
-          }
-
-          .btn-go-planifications {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
-            padding: 0.55rem 1.15rem;
-            border-radius: 0.4rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.35rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-          }
-
-          .btn-go-planifications:hover {
-            background: #dbeafe;
-            border-color: #2563eb;
-          }
-        `}</style>
-      </div>
-    );
-  }
 
   return (
     <div className="rubric-block-container">
@@ -99,52 +29,88 @@ export const RubricView: React.FC<VisualizadoresData> = ({ rubrics }) => {
             </p>
           </div>
         </div>
+
+        {plan ? (
+          <button
+            className="btn-header-action"
+            onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
+            title="Exportar planificación y herramientas a Microsoft Word (.docx)"
+          >
+            <FileDown size={16} /> Exportar
+          </button>
+        ) : (
+          <button
+            className="btn-header-action"
+            onClick={() => setActiveViewTab('planifications')}
+            title="Ver lista de planificaciones"
+          >
+            <Layers size={16} /> Ver Planificaciones
+          </button>
+        )}
       </div>
 
-      {tools.map((tool: any, tIdx: number) => {
-        const isRubrica = tool.tipo === 'rubrica';
-        const cleanedEscala = (tool.escala || []);
+      {tools.length === 0 ? (
+        <div className="empty-view-card-state">
+          <ClipboardCheck size={48} color="#94a3b8" />
+          <p className="empty-title">No hay herramientas de evaluación disponibles</p>
+          <p className="empty-desc">
+            {plan 
+              ? 'La planificación seleccionada no contiene herramientas de evaluación registradas.'
+              : 'Selecciona una planificación en el historial para visualizar sus herramientas de evaluación.'}
+          </p>
+          <button
+            className="btn-primary-action"
+            onClick={() => setActiveViewTab('planifications')}
+          >
+            <Layers size={16} /> Ver Planificaciones
+          </button>
+        </div>
+      ) : (
+        tools.map((tool: any, tIdx: number) => {
+          const isRubrica = tool.tipo === 'rubrica';
+          const cleanedEscala = (tool.escala || []);
 
-        return (
-          <div key={tIdx} className="rubric-section" style={{ marginBottom: tIdx < tools.length - 1 ? '1.75rem' : '0' }}>
-            <h3 className="section-title">
-              <span>{tool.titulo}</span>
-            </h3>
+          return (
+            <div key={tIdx} className="rubric-section" style={{ marginBottom: tIdx < tools.length - 1 ? '1.75rem' : '0' }}>
+              <h3 className="section-title">
+                <span>{tool.titulo}</span>
+              </h3>
 
-            <div className="table-responsive">
-              <table className="rubric-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '28%' }}>Criterios de Evaluación</th>
-                    {cleanedEscala.map((nivel: string, idx: number) => (
-                      <th key={idx}>{nivel}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {(tool.criterios || []).map((crit: CriterioEvaluacion, cIdx: number) => {
-                    const critName = crit.nombre;
-                    const defs = crit.definiciones;
+              <div className="table-responsive">
+                <table className="rubric-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '28%' }}>Criterios de Evaluación</th>
+                      {cleanedEscala.map((nivel: string, idx: number) => (
+                        <th key={idx}>{nivel}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(tool.criterios || []).map((crit: CriterioEvaluacion, cIdx: number) => {
+                      const critName = crit.nombre;
+                      const defs = crit.definiciones;
 
-                    return (
-                      <tr key={cIdx}>
-                        <td className="criterion-cell">
-                          <strong>{critName}</strong>
-                        </td>
-                        {cleanedEscala.map((_: string, sIdx: number) => (
-                          <td key={sIdx}>
-                            {isRubrica && defs && defs[sIdx] ? defs[sIdx] : null}
+                      return (
+                        <tr key={cIdx}>
+                          <td className="criterion-cell">
+                            <strong>{critName}</strong>
                           </td>
-                        ))}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          {cleanedEscala.map((_: string, sIdx: number) => (
+                            <td key={sIdx}>
+                              {isRubrica && defs && defs[sIdx] ? defs[sIdx] : null}
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
 
       <style>{`
         .rubric-block-container {

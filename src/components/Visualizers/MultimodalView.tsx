@@ -1,83 +1,12 @@
 import React from 'react';
-import { Video, ExternalLink, MonitorPlay, Headphones, Layers, FileText, Globe } from 'lucide-react';
+import { Video, ExternalLink, MonitorPlay, Headphones, Layers, FileText, Globe, FileDown } from 'lucide-react';
 import type { RecursoMultimodal, VisualizadoresData } from '../../types';
 import { useLangGraph } from '../../context/LangGraphContext';
+import { exportToWord } from '../../utils/wordExporter';
 
-export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) => {
-  const { setActiveViewTab } = useLangGraph();
+export const MultimodalView: React.FC<VisualizadoresData> = ({ plan, rubrics, multimodals }) => {
+  const { setActiveViewTab, showErrorNotification } = useLangGraph();
   const data = multimodals || [];
-
-  if (data.length === 0) {
-    return (
-      <div className="empty-visualizer-container">
-        <div className="empty-visualizer-content">
-          <h2 className="empty-visualizer-title">
-            No se ha seleccionado una planificación o la planificación no contiene recursos multimodales
-          </h2>
-          <button
-            className="btn-go-planifications"
-            onClick={() => setActiveViewTab('planifications')}
-          >
-            Ver planificaciones
-          </button>
-        </div>
-
-        <style>{`
-          .empty-visualizer-container {
-            background: #ffffff;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            padding: 4rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 20px -2px rgba(29, 78, 216, 0.08);
-            min-height: 420px;
-          }
-
-          .empty-visualizer-content {
-            max-width: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.25rem;
-          }
-
-          .empty-visualizer-title {
-            font-family: var(--font-heading);
-            font-size: 1.25rem;
-            font-weight: 400;
-            color: #64748b;
-            line-height: 1.4;
-            margin: 0;
-          }
-
-          .btn-go-planifications {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
-            padding: 0.55rem 1.15rem;
-            border-radius: 0.4rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.35rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-          }
-
-          .btn-go-planifications:hover {
-            background: #dbeafe;
-            border-color: #2563eb;
-          }
-        `}</style>
-      </div>
-    );
-  }
-
   const resources = data;
 
   const getYouTubeEmbedUrl = (urlStr: string) => {
@@ -110,63 +39,99 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ multimodals }) =>
             <Video size={20} color="#1d4ed8" />
           </div>
           <div>
-            <h2 className="visualizer-title">Galeria de Recursos Multimodales Sugeridos</h2>
+            <h2 className="visualizer-title">Recursos Multimodales</h2>
             <p className="visualizer-subtitle">
               Visualización estructurada de los recursos sugeridos para las actividades de aprendizaje
             </p>
           </div>
         </div>
+
+        {plan ? (
+          <button
+            className="btn-header-action"
+            onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
+            title="Exportar planificación y recursos a Microsoft Word (.docx)"
+          >
+            <FileDown size={16} /> Exportar
+          </button>
+        ) : (
+          <button
+            className="btn-header-action"
+            onClick={() => setActiveViewTab('planifications')}
+            title="Ver lista de planificaciones"
+          >
+            <Layers size={16} /> Ver Planificaciones
+          </button>
+        )}
       </div>
 
-      <div className="resources-grid">
-        {(resources || []).map((res: RecursoMultimodal, index: number) => {
-          const resTipo = res.tipo;
-          const resUrl = res.url;
-          const embedUrl = resTipo === 'video' ? getYouTubeEmbedUrl(resUrl) : null;
+      {resources.length === 0 ? (
+        <div className="empty-view-card-state">
+          <Video size={48} color="#94a3b8" />
+          <p className="empty-title">No hay recursos multimodales disponibles</p>
+          <p className="empty-desc">
+            {plan 
+              ? 'La planificación seleccionada no contiene recursos multimodales registrados.'
+              : 'Selecciona una planificación en el historial para visualizar los recursos multimodales.'}
+          </p>
+          <button
+            className="btn-primary-action"
+            onClick={() => setActiveViewTab('planifications')}
+          >
+            <Layers size={16} /> Ver Planificaciones
+          </button>
+        </div>
+      ) : (
+        <div className="resources-grid">
+          {(resources || []).map((res: RecursoMultimodal, index: number) => {
+            const resTipo = res.tipo;
+            const resUrl = res.url;
+            const embedUrl = resTipo === 'video' ? getYouTubeEmbedUrl(resUrl) : null;
 
-          return (
-            <div key={index} className="resource-card">
-              <div className={`card-badge ${resTipo}`}>
-                {getCardIcon(resTipo)} {resTipo.toUpperCase()}
-              </div>
-
-              {embedUrl ? (
-                <div className="video-embed-wrapper">
-                  <iframe
-                    src={embedUrl}
-                    title={res.titulo}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
+            return (
+              <div key={index} className="resource-card">
+                <div className={`card-badge ${resTipo}`}>
+                  {getCardIcon(resTipo)} {resTipo.toUpperCase()}
                 </div>
-              ) : (
-                <div className={`preview-box type-${res.tipo}`}>
-                  <div className="sim-icon-bg">
-                    {getCardIcon(res.tipo)}
+
+                {embedUrl ? (
+                  <div className="video-embed-wrapper">
+                    <iframe
+                      src={embedUrl}
+                      title={res.titulo}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
                   </div>
-                  <span>{res.titulo}</span>
-                </div>
-              )}
+                ) : (
+                  <div className={`preview-box type-${res.tipo}`}>
+                    <div className="sim-icon-bg">
+                      {getCardIcon(res.tipo)}
+                    </div>
+                    <span>{res.titulo}</span>
+                  </div>
+                )}
 
-              <div className="card-content">
-                <h4 className="card-title">{res.titulo}</h4>
+                <div className="card-content">
+                  <h4 className="card-title">{res.titulo}</h4>
 
-                <div className="card-footer">
-                  <span className="meta-tag">Formato: {res.tipo}</span>
-                  <a
-                    href={res.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-link"
-                  >
-                    Abrir Recurso <ExternalLink size={12} />
-                  </a>
+                  <div className="card-footer">
+                    <span className="meta-tag">Formato: {res.tipo}</span>
+                    <a
+                      href={res.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-link"
+                    >
+                      Abrir Recurso <ExternalLink size={12} />
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       <style>{`
         .multimodal-visualizer-container {

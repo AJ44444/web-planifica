@@ -12,7 +12,8 @@ import {
   GraduationCap, 
   Award, 
   Users,
-  FileDown
+  FileDown,
+  Layers
 } from 'lucide-react';
 
 import type { FilaCurricularPlan, VisualizadoresData } from '../../types';
@@ -28,78 +29,8 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
     contentIdx?: number;
   } | null>(null);
 
-  if (!data || !data.desarrollo_curricular || data.desarrollo_curricular.length === 0) {
-    return (
-      <div className="empty-visualizer-container">
-        <div className="empty-visualizer-content">
-          <h2 className="empty-visualizer-title">
-            No se ha seleccionado una planificación
-          </h2>
-          <button
-            className="btn-go-planifications"
-            onClick={() => setActiveViewTab('planifications')}
-          >
-            Ver planificaciones
-          </button>
-        </div>
-
-        <style>{`
-          .empty-visualizer-container {
-            background: #ffffff;
-            border-radius: 0.75rem;
-            border: 1px solid #e2e8f0;
-            padding: 4rem 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            box-shadow: 0 4px 20px -2px rgba(29, 78, 216, 0.08);
-            min-height: 420px;
-          }
-
-          .empty-visualizer-content {
-            max-width: 520px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.25rem;
-          }
-
-          .empty-visualizer-title {
-            font-family: var(--font-heading);
-            font-size: 1.25rem;
-            font-weight: 400;
-            color: #64748b;
-            line-height: 1.4;
-            margin: 0;
-          }
-
-          .btn-go-planifications {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1px solid #bfdbfe;
-            padding: 0.55rem 1.15rem;
-            border-radius: 0.4rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.35rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-          }
-
-          .btn-go-planifications:hover {
-            background: #dbeafe;
-            border-color: #2563eb;
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  const { metadatos, encabezado, desarrollo_curricular } = data;
+  const { metadatos, encabezado, desarrollo_curricular } = data || {};
+  const hasValidPlan = Boolean(data && desarrollo_curricular && desarrollo_curricular.length > 0);
 
   const handleNodeClick = (rowIdx: number, indicatorIdx: number, contentIdx?: number) => {
     if (
@@ -128,16 +59,40 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
           </div>
         </div>
 
-        <button
-          className="btn-export-word"
-          onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
-          title="Exportar planificación a Microsoft Word (.docx)"
-        >
-          <FileDown size={16} /> Exportar
-        </button>
+        {hasValidPlan ? (
+          <button
+            className="btn-header-action"
+            onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
+            title="Exportar planificación a Microsoft Word (.docx)"
+          >
+            <FileDown size={16} /> Exportar
+          </button>
+        ) : (
+          <button
+            className="btn-header-action"
+            onClick={() => setActiveViewTab('planifications')}
+            title="Ver lista de planificaciones"
+          >
+            <Layers size={16} /> Ver Planificaciones
+          </button>
+        )}
       </div>
 
-      <div className="plan-metadata-grid">
+      {!hasValidPlan ? (
+        <div className="empty-view-card-state">
+          <BookOpen size={48} color="#94a3b8" />
+          <p className="empty-title">No se ha seleccionado una planificación</p>
+          <p className="empty-desc">Selecciona una planificación en el historial para visualizarla aquí.</p>
+          <button
+            className="btn-primary-action"
+            onClick={() => setActiveViewTab('planifications')}
+          >
+            <Layers size={16} /> Ver Planificaciones
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="plan-metadata-grid">
         <div className="meta-card">
           <span className="meta-label"><Building2 size={12} /> Centro Educativo</span>
           <span className="meta-value">{encabezado?.centro_educativo}</span>
@@ -278,6 +233,8 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
           </div>
         );
       })}
+      </>
+      )}
 
       <style>{`
         .plan-visualizer-container {

@@ -176,11 +176,15 @@ const MainWorkspaceContent: React.FC = () => {
             )}
             {activeViewTab === 'rubric' && (
               <RubricView 
+                plan={selectedPlanDetail?.planificacion}
                 rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
+                multimodals={selectedPlanDetail?.recursos_multimodales} 
               />
             )}
             {activeViewTab === 'multimodal' && (
               <MultimodalView 
+                plan={selectedPlanDetail?.planificacion}
+                rubrics={selectedPlanDetail?.instrumentos_evaluacion} 
                 multimodals={selectedPlanDetail?.recursos_multimodales} 
               />
             )}
