@@ -4,7 +4,6 @@ import { useLangGraph } from '../../context/LangGraphContext';
 import { 
   BookOpen, 
   Target, 
-  Calendar, 
   UserCheck, 
   MapPin, 
   Building2, 
@@ -59,21 +58,13 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
           </div>
         </div>
 
-        {hasValidPlan ? (
+        {hasValidPlan && (
           <button
             className="btn-header-action"
             onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
             title="Exportar planificación a Microsoft Word (.docx)"
           >
             <FileDown size={16} /> Exportar
-          </button>
-        ) : (
-          <button
-            className="btn-header-action"
-            onClick={() => setActiveViewTab('planifications')}
-            title="Ver lista de planificaciones"
-          >
-            <Layers size={16} /> Ver Planificaciones
           </button>
         )}
       </div>
@@ -199,11 +190,6 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
             </div>
 
             <div className="plan-table-wrapper">
-              <h3 className="section-subtitle">
-                <Calendar size={16} color="#2563eb" />
-                <span>Actividades de Aprendizaje</span>
-              </h3>
-
               <div className="table-responsive">
                 <table className="plan-table">
                   <thead>

@@ -5,7 +5,7 @@ import { useLangGraph } from '../../context/LangGraphContext';
 import { exportToWord } from '../../utils/wordExporter';
 
 export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multimodals }) => {
-  const { setActiveViewTab, showErrorNotification } = useLangGraph();
+  const { showErrorNotification, setActiveViewTab } = useLangGraph();
   const rawTools = rubrics || [];
   const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
     tipo: t.tipo,
@@ -30,21 +30,13 @@ export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multim
           </div>
         </div>
 
-        {plan ? (
+        {plan && (
           <button
             className="btn-header-action"
             onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
             title="Exportar planificación y herramientas a Microsoft Word (.docx)"
           >
             <FileDown size={16} /> Exportar
-          </button>
-        ) : (
-          <button
-            className="btn-header-action"
-            onClick={() => setActiveViewTab('planifications')}
-            title="Ver lista de planificaciones"
-          >
-            <Layers size={16} /> Ver Planificaciones
           </button>
         )}
       </div>

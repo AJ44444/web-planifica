@@ -5,7 +5,7 @@ import { useLangGraph } from '../../context/LangGraphContext';
 import { exportToWord } from '../../utils/wordExporter';
 
 export const MultimodalView: React.FC<VisualizadoresData> = ({ plan, rubrics, multimodals }) => {
-  const { setActiveViewTab, showErrorNotification } = useLangGraph();
+  const { showErrorNotification, setActiveViewTab } = useLangGraph();
   const data = multimodals || [];
   const resources = data;
 
@@ -46,21 +46,13 @@ export const MultimodalView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
           </div>
         </div>
 
-        {plan ? (
+        {plan && (
           <button
             className="btn-header-action"
             onClick={() => exportToWord({ plan, rubrics, multimodals }, showErrorNotification)}
             title="Exportar planificación y recursos a Microsoft Word (.docx)"
           >
             <FileDown size={16} /> Exportar
-          </button>
-        ) : (
-          <button
-            className="btn-header-action"
-            onClick={() => setActiveViewTab('planifications')}
-            title="Ver lista de planificaciones"
-          >
-            <Layers size={16} /> Ver Planificaciones
           </button>
         )}
       </div>

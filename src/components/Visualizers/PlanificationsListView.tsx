@@ -103,7 +103,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
                   <th>Grado & Sección</th>
                   <th>Fecha de Creación</th>
                   <th>Estado</th>
-                  <th className="text-right">Acciones</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -126,7 +126,7 @@ export const PlanificationsListView: React.FC<PlanificationsListViewProps> = ({ 
                         {plan.metadatos?.estado}
                       </span>
                     </td>
-                    <td className="text-right">
+                    <td>
                       <button
                         className="btn-load-visualizers"
                         onClick={() => plan._id && handleLoadVisualizers(plan._id)}

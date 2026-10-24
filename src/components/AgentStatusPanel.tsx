@@ -4,7 +4,6 @@ import {
   ClipboardCheck, 
   Video, 
   MessageSquare,
-  Compass,
   History,
   Layers,
   ChevronLeft,
@@ -19,7 +18,6 @@ export const AgentStatusPanel: React.FC<AgentStatusPanelProps> = ({ activeTab, o
     <aside className={`agent-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-title">
-          <Compass size={18} color="#1d4ed8" />
           <span className="nav-label">Workspace</span>
         </div>
         <button
