@@ -1049,6 +1049,14 @@ h4 { font-size: 1rem; line-height: 1.5rem; }
 
 .spin-loader {
   animation: spin 1s linear infinite;
+  color: #1d4ed8;
+}
+
+.btn-process-cnb .spin-loader,
+.btn-primary .spin-loader,
+.btn-load-visualizers .spin-loader,
+.btn-load-visualizers .spin {
+  color: #ffffff;
 }
 
 /* Mobile & Tablet Responsive Rules */
