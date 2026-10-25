@@ -1,18 +1,13 @@
 import React from 'react';
 import { ClipboardCheck, FileDown, Layers } from 'lucide-react';
-import type { InstrumentoEvaluacion, CriterioEvaluacion, VisualizadoresData } from '../../types';
+import type { CriterioEvaluacion, VisualizadoresData } from '../../types';
 import { useLangGraph } from '../../context/LangGraphContext';
 import { exportToWord } from '../../utils/wordExporter';
 
 export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multimodals }) => {
   const { showErrorNotification, setActiveViewTab } = useLangGraph();
-  const rawTools = rubrics || [];
-  const tools = rawTools.map((t: InstrumentoEvaluacion) => ({
-    tipo: t.tipo,
-    titulo: t.titulo,
-    escala: t.instrumento_generado?.escala || [],
-    criterios: t.instrumento_generado?.criterios || [],
-  }));
+  // ponytail: Use rubrics array directly without creating redundant intermediate mapped array
+  const tools = rubrics || [];
 
   return (
     <div className="rubric-block-container">
@@ -58,9 +53,10 @@ export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multim
           </button>
         </div>
       ) : (
-        tools.map((tool: any, tIdx: number) => {
+        tools.map((tool, tIdx: number) => {
           const isRubrica = tool.tipo === 'rubrica';
-          const cleanedEscala = (tool.escala || []);
+          const cleanedEscala = tool.instrumento_generado?.escala || [];
+          const criterios = tool.instrumento_generado?.criterios || [];
 
           return (
             <div key={tIdx} className="rubric-section" style={{ marginBottom: tIdx < tools.length - 1 ? '1.75rem' : '0' }}>
@@ -79,7 +75,7 @@ export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multim
                     </tr>
                   </thead>
                   <tbody>
-                    {(tool.criterios || []).map((crit: CriterioEvaluacion, cIdx: number) => {
+                    {criterios.map((crit: CriterioEvaluacion, cIdx: number) => {
                       const critName = crit.nombre;
                       const defs = crit.definiciones;
 
@@ -103,121 +99,6 @@ export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multim
           );
         })
       )}
-
-      <style>{`
-        .rubric-block-container {
-          background: #ffffff;
-          border-radius: 0.75rem;
-          border: 1px solid #e2e8f0;
-          padding: 1.5rem;
-          display: flex;
-          flex-direction: column;
-          gap: 1.25rem;
-          box-shadow: 0 4px 20px -2px rgba(29, 78, 216, 0.08);
-        }
-
-        .visualizer-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-bottom: 1px solid #e2e8f0;
-          padding-bottom: 1rem;
-        }
-
-        .title-row {
-          display: flex;
-          align-items: center;
-          gap: 0.85rem;
-        }
-
-        .icon-badge {
-          width: 42px;
-          height: 42px;
-          border-radius: 0.65rem;
-          background: #ffffff;
-          border: 1px solid #cbd5e1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
-        }
-
-        .visualizer-title {
-          font-family: var(--font-heading);
-          font-size: 1.25rem;
-          font-weight: 700;
-          color: #0f172a;
-          margin: 0;
-        }
-
-        .visualizer-subtitle {
-          font-size: 0.8rem;
-          color: #64748b;
-          margin: 0;
-        }
-
-        .rubric-section {
-          display: flex;
-          flex-direction: column;
-          gap: 0.85rem;
-        }
-
-        .section-title {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          font-size: 1rem;
-          font-weight: 700;
-          color: #1d4ed8;
-        }
-
-        .table-responsive {
-          overflow-x: auto;
-        }
-
-        .rubric-table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0;
-          border: 1px solid #e2e8f0;
-          border-radius: 0.65rem;
-          overflow: hidden;
-        }
-
-        .rubric-table th {
-          background: #eff6ff;
-          color: #1d4ed8;
-          border-bottom: 1px solid #bfdbfe;
-          font-family: var(--font-heading);
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
-          text-align: left;
-          padding: 0.75rem 1rem;
-          font-size: 0.8rem;
-        }
-
-        .rubric-table td {
-          padding: 0.85rem 1rem;
-          border-bottom: 1px solid #e2e8f0;
-          font-size: 0.825rem;
-          color: #0f172a;
-          line-height: 1.45;
-          vertical-align: top;
-        }
-
-        .rubric-table tr:last-child td {
-          border-bottom: none;
-        }
-
-        .rubric-table tr:nth-child(odd) td {
-          background: #ffffff;
-        }
-
-        .rubric-table tr:nth-child(even) td {
-          background: #f8fafc;
-        }
-      `}</style>
     </div>
   );
 };

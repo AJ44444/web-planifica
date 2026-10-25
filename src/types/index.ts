@@ -2,7 +2,6 @@ export interface User {
   id_usuario: string;
   email: string;
   nombres: string;
-  rol?: string;
 }
 
 export interface MetadatosPlan {
@@ -78,7 +77,6 @@ export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: string;
-  agentName?: string;
 }
 
 export interface Thread {
@@ -180,6 +178,5 @@ export interface ProcessPdfResponse {
 export interface SSENotificationData {
   status: 'connected' | 'in_progress' | 'completed' | string;
   message?: string;
-  id_subarea?: string;
   [key: string]: any;
 }
