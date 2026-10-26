@@ -107,9 +107,11 @@ export const ElementEditorPopover: React.FC<ElementEditorPopoverProps> = ({
               {selected.label} {displayText ? displayText : ''}
             </span>
           </div>
-          <div className="element-selector-tag">
-            {selected.id ? `id: ${selected.id}` : selected.selector || selected.label}
-          </div>
+          {selected.id && (
+            <div className="element-selector-tag">
+              id: {selected.id}
+            </div>
+          )}
         </div>
         <button
           type="button"

@@ -10,9 +10,14 @@ export const RubricView: React.FC<VisualizadoresData> = ({ plan, rubrics, multim
   // ponytail: Use rubrics array directly without creating redundant intermediate mapped array
   const tools = rubrics || [];
 
-  const [isEditorMode, setIsEditorMode] = useState<boolean>(true);
+  const [isEditorMode, setIsEditorMode] = useState<boolean>(false);
   const [selectedElement, setSelectedElement] = useState<SelectedElementInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsEditorMode(false);
+    setSelectedElement(null);
+  }, [plan?._id, rubrics]);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {

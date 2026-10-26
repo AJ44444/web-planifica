@@ -30,9 +30,14 @@ export const LessonPlanView: React.FC<VisualizadoresData> = ({ plan, rubrics, mu
     contentIdx?: number;
   } | null>(null);
 
-  const [isEditorMode, setIsEditorMode] = useState<boolean>(true);
+  const [isEditorMode, setIsEditorMode] = useState<boolean>(false);
   const [selectedElement, setSelectedElement] = useState<SelectedElementInfo | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsEditorMode(false);
+    setSelectedElement(null);
+  }, [plan?._id, plan]);
 
   const { metadatos, encabezado, desarrollo_curricular } = data || {};
   const hasValidPlan = Boolean(data && desarrollo_curricular && desarrollo_curricular.length > 0);
