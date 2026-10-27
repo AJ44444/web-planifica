@@ -142,7 +142,7 @@ export const ElementEditorPopover: React.FC<ElementEditorPopoverProps> = ({
       </div>
 
       <div className="popover-footer">
-        <span className="intent-label">Intent</span>
+        <span className="intent-label">Intención</span>
         <div className="intent-buttons-row">
           <button
             type="button"
@@ -152,7 +152,7 @@ export const ElementEditorPopover: React.FC<ElementEditorPopoverProps> = ({
             title="Enviar cambios al chat asociando el ID del elemento"
           >
             <Edit3 size={13} />
-            <span>Change</span>
+            <span>Cambiar</span>
           </button>
           <button
             type="button"
@@ -162,7 +162,7 @@ export const ElementEditorPopover: React.FC<ElementEditorPopoverProps> = ({
             title="Hacer una consulta sobre este elemento"
           >
             <HelpCircle size={13} />
-            <span>Question</span>
+            <span>Preguntar</span>
           </button>
         </div>
       </div>
